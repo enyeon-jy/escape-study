@@ -5,6 +5,14 @@ import type { Concept, Difficulty, GameData, GameMode, ReviewItem, Room, ThemeId
 
 export const SAMPLE_SUBJECT = "컴퓨터 네트워크";
 
+// 예시 데이터의 파이썬 코드 자물쇠 방에 쓰는 코드. AI 없이도 시연할 수 있게 정답(9)을 미리 정해 두었다.
+// (실제 AI 방에서는 이 값을 AI가 아니라 브라우저가 코드를 실행해서 정한다. 시험: /code-demo)
+export const SAMPLE_CODE = {
+  lang: "python" as const,
+  source: ["total = 0", "for i in range(1, 6):", "    if i % 2 == 1:", "        total = total + i", "print(total)"].join("\n"),
+  answer: "9",
+};
+
 export const SAMPLE_MATERIAL = `[컴퓨터 네트워크 기초]
 1. OSI 참조 모델은 네트워크 통신 과정을 7개의 계층으로 나눈 모델이다.
 2. HTTPS는 HTTP에 암호화를 더한 프로토콜이며, 기본 포트 번호는 443이다.
