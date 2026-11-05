@@ -1,24 +1,7 @@
-import { DIFFICULTY } from "./config";
 import type { LockType } from "./lock";
 import { computeRoomCount } from "./rooms";
-import { WALL_SPOT_IDS } from "./scenes";
-import type {
-  Clue,
-  ClueFormat,
-  Concept,
-  Content,
-  Difficulty,
-  GameData,
-  GameMode,
-  Item,
-  ReviewItem,
-  Room,
-  RoomView,
-  Slot,
-  SlotShape,
-  ThemeId,
-  ViewId,
-} from "./types";
+import { layoutRoom, type ClueSrc, type RoomSpec } from "./layout";
+import type { Concept, Difficulty, GameData, GameMode, ReviewItem, Room, ThemeId, ViewId } from "./types";
 
 export const SAMPLE_SUBJECT = "컴퓨터 네트워크";
 
@@ -37,12 +20,6 @@ const CONCEPTS: Concept[] = [
   { id: "ipv4", name: "IPv4 주소의 비트 수" },
 ];
 
-interface ClueSrc {
-  title: string;
-  format: ClueFormat;
-  lines: string[];
-}
-
 interface RoomTemplate {
   id: string;
   name: string;
@@ -53,6 +30,7 @@ interface RoomTemplate {
   answer: string;
   units: string[];
   hints: string[]; // 난이도별 힌트 횟수만큼 앞에서부터 사용
+  explanation: string;
   conceptId: string;
   professorLine: string;
   views: ViewId[]; // 클로즈업 화면 (2~3개)
@@ -75,6 +53,7 @@ const TEMPLATES: RoomTemplate[] = [
       "문이 묻는 건 그 모델이 나눈 것의 '개수'야.",
       "강의자료 첫 번째 줄을 떠올려 봐.",
     ],
+    explanation: "OSI 참조 모델은 통신 과정을 7개의 계층으로 나눈 모델이다. 단서가 가리킨 모델이 OSI이고, 문이 물은 것은 계층의 수라서 답은 7이다.",
     conceptId: "osi",
     professorLine: "자네, 아직도 OSI 모델이 몇 계층인지 모르나?",
     views: ["shelf", "desk"],
@@ -121,6 +100,7 @@ const TEMPLATES: RoomTemplate[] = [
       "자물쇠는 알파벳 다섯 글자를 원해.",
       "HTTP 뒤에 한 글자를 붙인 약자야.",
     ],
+    explanation: "HTTP에 암호화를 더한 프로토콜이 HTTPS다. 주소창에 자물쇠가 뜨는 안전한 웹 통신이므로 답은 HTTPS이다.",
     conceptId: "https",
     professorLine: "HTTPS가 무슨 뜻인지도 모르면서 탈출하겠다고?",
     views: ["shelf", "desk", "cabinet"],
@@ -168,6 +148,7 @@ const TEMPLATES: RoomTemplate[] = [
       "문이 묻는 건 그 주소 전체를 비트로 센 길이야.",
       "한 덩어리가 몇 비트인지, 덩어리는 몇 개인지 자료에 있어.",
     ],
+    explanation: "IPv4 주소는 8비트씩 4덩어리로 이루어져 있다. 8비트 × 4 = 32비트라서 답은 32이다.",
     conceptId: "ipv4",
     professorLine: "IPv4 주소가 몇 비트인지도 모르나? 다시 공부해 오게!",
     views: ["desk", "cabinet"],
@@ -233,97 +214,30 @@ const REVIEW: ReviewItem[] = [
   },
 ];
 
-// 클로즈업 화면 안 작은 물건 3칸의 종류
-const SLOT_KINDS: Record<ViewId, { label: string; shape: SlotShape }[]> = {
-  shelf: [
-    { label: "낡은 책", shape: "book" },
-    { label: "상자", shape: "box" },
-    { label: "컵", shape: "cup" },
-  ],
-  desk: [
-    { label: "서랍", shape: "drawer" },
-    { label: "노트", shape: "notebook" },
-    { label: "컵", shape: "cup" },
-  ],
-  cabinet: [
-    { label: "상자", shape: "box" },
-    { label: "서류철", shape: "notebook" },
-    { label: "서랍", shape: "drawer" },
-  ],
-};
-
-// 단서와 아이템을 방 안 물건에 배치한다. 방마다 시작 위치를 돌려서 배치가 달라진다.
+// 예시 방 템플릿을 방 내용(RoomSpec)으로 바꿔 코드가 물건 배치를 정하게 한다 (AI가 만든 방과 같은 경로)
 function buildRoom(theme: ThemeId, difficulty: Difficulty, index: number, roomCount: number): Room {
   void theme;
   const tpl = TEMPLATES[index % TEMPLATES.length];
   const set = tpl.clues[difficulty];
-  const cfg = DIFFICULTY[difficulty];
-  const real: Clue[] = set.real.slice(0, cfg.realClues[1]).map((c, i) => ({ id: `${tpl.id}-r${i}`, kind: "real", ...c }));
-  const fake: Clue[] = set.fake.slice(0, cfg.fakeClues).map((c, i) => ({ id: `${tpl.id}-f${i}`, kind: "fake", ...c }));
-
-  // 첫 방은 튜토리얼이라 열쇠가 없고, 이후 방은 열쇠 1개로 잠긴 칸 하나를 연다
-  const hasKey = index > 0 && !!tpl.lockedSlot;
-  const key: Item = { id: `${tpl.id}-key`, name: "서랍 열쇠", icon: "🗝️" };
-
-  // 잠긴 칸에는 진짜 단서 하나(마지막 것)를 넣는다
-  const lockedClue = hasKey ? real[real.length - 1] : null;
-  const openReal = hasKey ? real.slice(0, -1) : real;
-
-  // 나머지(진짜·가짜 단서와 열쇠)를 섞는다
-  const contents: Content[] = [];
-  if (hasKey) contents.push({ itemId: key.id });
-  const a = [...openReal];
-  const b = [...fake];
-  while (a.length || b.length) {
-    if (a.length) contents.push({ clueId: a.shift()!.id });
-    if (b.length) contents.push({ clueId: b.shift()!.id });
-  }
-
-  // 클로즈업 화면과 칸
-  const views: RoomView[] = tpl.views.map((vid) => ({
-    id: vid,
-    slots: SLOT_KINDS[vid].map<Slot>((k, i) => {
-      const id = `${vid}-${i}`;
-      const locked = hasKey && id === tpl.lockedSlot;
-      return {
-        id,
-        label: k.label,
-        shape: k.shape,
-        content: locked && lockedClue ? { clueId: lockedClue.id } : null,
-        lockedBy: locked ? key.id : undefined,
-      };
-    }),
-  }));
-
-  // 열쇠 없이 열려 있는 물건들
-  const containers: string[] = [...WALL_SPOT_IDS, ...views.flatMap((v) => v.slots.filter((s) => !s.lockedBy).map((s) => s.id))];
-  const n = containers.length;
-  const rot = (index * 2) % n;
-  const ordered = [...containers.slice(rot), ...containers.slice(0, rot)];
-
-  const wallSpots: Record<string, Content | null> = {};
-  WALL_SPOT_IDS.forEach((id) => (wallSpots[id] = null));
-  contents.forEach((c, j) => {
-    const target = ordered[Math.floor((j * n) / contents.length)]; // 서로 다른 칸에 들어간다
-    if (target in wallSpots) wallSpots[target] = c;
-    else views.forEach((v) => v.slots.forEach((s) => s.id === target && (s.content = c)));
-  });
-
-  const clues = [...openReal, ...fake, ...(lockedClue ? [lockedClue] : [])];
-  return {
+  const spec: RoomSpec = {
     id: tpl.id + (index >= TEMPLATES.length ? `-${index}` : ""),
     name: tpl.name,
     situation: tpl.situation,
     story: tpl.story,
-    wallSpots,
-    views,
-    items: hasKey ? [key] : [],
-    clues,
-    lock: { type: tpl.lockType, answer: tpl.answer, units: tpl.units, hints: tpl.hints },
+    lockType: tpl.lockType,
+    question: tpl.question,
+    answer: tpl.answer,
+    units: tpl.units,
+    hints: tpl.hints,
+    explanation: tpl.explanation,
     conceptIds: [tpl.conceptId],
     professorLine: tpl.professorLine,
-    isFinal: index === roomCount - 1,
+    real: set.real,
+    fake: set.fake,
+    views: tpl.views,
+    lockedSlot: index > 0 ? tpl.lockedSlot : undefined,
   };
+  return layoutRoom(spec, difficulty, index, roomCount);
 }
 
 export interface SampleOptions {
@@ -346,6 +260,8 @@ export function sampleCreateGame(o: SampleOptions): GameData {
     roomCount,
     rooms: [],
     review: REVIEW,
+    material: SAMPLE_MATERIAL,
+    isSample: true,
   };
   game.rooms = [buildRoom(o.theme, o.difficulty, 0, roomCount)]; // 첫 방만 먼저 만든다
   return game;

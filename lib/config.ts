@@ -54,8 +54,8 @@ export const ROOMS = {
 
 // AI와 학교 크레딧 관련 제한
 export const MATERIAL_MAX_CHARS = 8000; // 붙여넣는 자료의 최대 글자 수
-export const AI_RETRY_COUNT = 1; // 실패하면 딱 1번만 다시 시도
-export const AI_ERROR_MESSAGE = "방을 만들지 못했어요. 잠시 후 다시 시도해 주세요.";
+export const AI_RETRY_COUNT = 1; // 서버에서 형식 검사에 실패하거나 호출이 실패하면 딱 1번만 다시 요청
+export const AI_ERROR_MESSAGE = "방을 만드는 데 실패했어요. 다시 시도해 주세요.";
 
 // 방 장면에서 클릭할 수 있는 물건 수 (장면 그림에 맞춰져 있음)
 export const SCENE_OBJECT_COUNT = 6;

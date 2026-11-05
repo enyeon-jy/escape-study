@@ -63,6 +63,7 @@ export interface Room {
     answer: string; // 정답 (코드가 비교)
     units?: string[];
     hints: string[]; // 앞에서부터 순서대로 보여 줌
+    explanation: string; // "왜 그게 답인지" 짧은 설명 (정답 보기에서 보여 줌)
   };
   conceptIds: string[];
   professorLine: string; // 실패했을 때 교수님 대사
@@ -87,6 +88,8 @@ export interface GameData {
   roomCount: number;
   rooms: Room[]; // 지금까지 만들어진 방 (뒤쪽 방은 플레이하는 동안 만들어짐)
   review: ReviewItem[];
+  material: string; // 붙여넣은 자료(최대 8,000자). 다음 방을 만들 때 다시 쓴다
+  isSample?: boolean; // 예시 자료로 시작한 게임 (AI를 부르지 않는다)
 }
 
 // 방탈출 진행 상황 (브라우저에 저장되어 "이어하기"에 쓰임)
@@ -99,6 +102,7 @@ export interface Progress {
   unlocked: string[]; // 열어 둔 잠긴 곳
   hintsShown: number; // 현재 방에서 본 힌트 수
   hintsUsed: number; // 전체 힌트 사용 수
+  revealedRooms: string[]; // 정답 보기를 눌렀던 방 id
   wrongRooms: string[]; // 한 번이라도 틀렸던 방 이름
   clearedSec: number[]; // 탈출한 방별 걸린 시간
 }
@@ -108,6 +112,8 @@ export interface GameResult {
   elapsedSec: number; // 방별 시간 합산
   hintsUsed: number;
   wrongLocks: string[];
+  revealedCount: number; // 정답 열람 횟수
+  revealedConceptIds: string[]; // 정답을 열람한 개념 (복습에서 맨 먼저)
   roomsCleared: number;
   totalRooms: number;
   playedConceptIds: string[]; // 이번 게임에서 다룬 개념 (복습에서 다시 물음)

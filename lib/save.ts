@@ -1,7 +1,7 @@
 import type { GameData, GameResult, Progress } from "./types";
 
 // 진행 상황·이미 만든 방은 브라우저(localStorage)에만 저장한다. 서버 DB는 쓰지 않는다.
-const KEY = "escape-study-save-v3";
+const KEY = "escape-study-save-v4";
 
 export interface Snapshot {
   screen: "escape" | "result" | "review";
