@@ -1,5 +1,4 @@
 import type { LockType } from "./lock";
-import { computeRoomCount } from "./rooms";
 import { layoutRoom, type ClueSrc, type RoomSpec } from "./layout";
 import type { Concept, Difficulty, GameData, GameMode, ReviewItem, Room, ThemeId, ViewId } from "./types";
 
@@ -16,7 +15,12 @@ export const SAMPLE_CODE = {
 export const SAMPLE_MATERIAL = `[컴퓨터 네트워크 기초]
 1. OSI 참조 모델은 네트워크 통신 과정을 7개의 계층으로 나눈 모델이다.
 2. HTTPS는 HTTP에 암호화를 더한 프로토콜이며, 기본 포트 번호는 443이다.
-3. IPv4 주소는 32비트로 이루어져 있고, 8비트씩 4덩어리로 나누어 표기한다.`;
+3. IPv4 주소는 32비트로 이루어져 있고, 8비트씩 4덩어리로 나누어 표기한다.
+
+[파이썬 기초]
+4. range(a, b)는 a부터 b 바로 앞 숫자까지의 정수를 만든다. 예: range(1, 4)는 1, 2, 3이다.
+5. % 연산자는 나눈 나머지를 구한다. 예: 7 % 2는 1이다.
+6. for 문은 range가 만든 숫자를 하나씩 꺼내 반복하고, print()는 값을 화면에 출력한다.`;
 
 // 예시 데이터. 4단계에서 AI가 같은 모양의 JSON을 만들어 준다.
 // 규칙: 단서 하나만으로는 답이 안 나오고, 정답은 단서에 직접 쓰지 않는다 (개념을 알아야 답으로 이어짐).
@@ -26,6 +30,7 @@ const CONCEPTS: Concept[] = [
   { id: "osi", name: "OSI 참조 모델의 계층 수" },
   { id: "https", name: "HTTPS (HTTP에 암호화를 더한 프로토콜)" },
   { id: "ipv4", name: "IPv4 주소의 비트 수" },
+  { id: "pyloop", name: "파이썬 range·반복문과 나머지(%) 연산" },
 ];
 
 interface RoomTemplate {
@@ -43,8 +48,12 @@ interface RoomTemplate {
   professorLine: string;
   views: ViewId[]; // 클로즈업 화면 (2~3개)
   lockedSlot?: string; // 열쇠로 여는 칸
+  codeLang?: "python"; // 코드 자물쇠 방 (real 단서 첫 번째가 모니터에 뜨는 코드)
   clues: Record<Difficulty, { real: ClueSrc[]; fake: ClueSrc[] }>;
 }
+
+// 코드 자물쇠 방에서 모니터에 뜨는 코드 단서
+const CODE_CLUE: ClueSrc = { title: "컴퓨터 화면", format: "code", lines: SAMPLE_CODE.source.split("\n") };
 
 const TEMPLATES: RoomTemplate[] = [
   {
@@ -143,10 +152,52 @@ const TEMPLATES: RoomTemplate[] = [
     },
   },
   {
+    id: "server",
+    name: "서버실",
+    situation: "컴퓨터가 켜진 서버실이다. 모니터에 코드가 떠 있고, 앞 벽의 출구 문에 숫자 자물쇠가 달려 있다. 캐비닛의 상자가 잠겨 있다.",
+    story: "3 / 서버실 한쪽에서 모니터만 홀로 빛난다. 저 코드가 다음 문의 열쇠다.",
+    lockType: "dial-number",
+    question: "모니터의 코드를 실행하면 마지막에 출력되는 값을 맞춰 보세요.",
+    answer: SAMPLE_CODE.answer,
+    units: [],
+    hints: ["모니터의 코드를 맨 윗줄부터 한 줄씩 따라가 보자.", "range(1, 6)이 만드는 숫자들을 먼저 적어 봐.", "% 2 == 1 을 만족하는 숫자만 total에 더해져."],
+    explanation: "range(1, 6)은 1, 2, 3, 4, 5를 만든다. 그중 2로 나눈 나머지가 1인 1, 3, 5만 total에 더해지므로 1 + 3 + 5 = 9가 출력된다.",
+    conceptId: "pyloop",
+    professorLine: "자네, 반복문 하나 못 읽으면서 탈출하겠다고?",
+    views: ["desk", "cabinet"],
+    lockedSlot: "cabinet-0",
+    codeLang: "python",
+    clues: {
+      easy: {
+        real: [CODE_CLUE, { title: "경고 쪽지", format: "note", lines: ["문 비밀번호는 모니터 속 프로그램이 마지막에 출력하는 값이야."] }],
+        fake: [],
+      },
+      normal: {
+        real: [
+          CODE_CLUE,
+          { title: "경고 쪽지", format: "note", lines: ["화면의 프로그램이 끝까지 돌고 나서 찍는 숫자가 열쇠다."] },
+          { title: "관리자 메모", format: "document", lines: ["입력 형식: 숫자만. 단위는 쓰지 말 것."] },
+        ],
+        fake: [{ title: "서버 점검표", format: "document", lines: ["백업 주기: 매일 새벽 2시", "팬 청소: 분기별"] }],
+      },
+      hard: {
+        real: [
+          CODE_CLUE,
+          { title: "경고 쪽지", format: "note", lines: ["프로그램이 마지막 줄에서 내보내는 값. 그걸 눌러."] },
+          { title: "관리자 메모", format: "document", lines: ["숫자만, 한 자리 또는 두 자리."] },
+        ],
+        fake: [
+          { title: "서버 점검표", format: "document", lines: ["백업 주기: 매일 새벽 2시"] },
+          { title: "전원 로그", format: "document", lines: ["UPS 점검 완료 / 온도 정상"] },
+        ],
+      },
+    },
+  },
+  {
     id: "studio",
     name: "방송실",
     situation: "마지막 방이다. 앞 벽의 출구 문에 키패드 도어락이 달려 있다. 캐비닛의 상자가 잠겨 있다.",
-    story: "3 / 마지막 방송실. 저 문만 열면 학교 밖이다. 아침 9시가 코앞이다!",
+    story: "4 / 마지막 방송실. 저 문만 열면 학교 밖이다. 아침 9시가 코앞이다!",
     lockType: "keypad",
     question: "도어락 번호를 눌러 보세요.",
     answer: "32",
@@ -220,6 +271,18 @@ const REVIEW: ReviewItem[] = [
     units: ["비트", "bit", "bits"],
     explanation: "IPv4 주소는 8비트씩 4덩어리, 총 32비트로 표기한다.",
   },
+  {
+    conceptId: "pyloop",
+    prompt: "range(1, 4)가 만드는 숫자는 1, 2, ____ 이다.",
+    answer: "3",
+    explanation: "range(a, b)는 b 바로 앞 숫자까지 만들기 때문에 range(1, 4)는 1, 2, 3이다.",
+  },
+  {
+    conceptId: "pyloop",
+    prompt: "파이썬에서 7 % 2의 결과는 ____ 이다.",
+    answer: "1",
+    explanation: "% 연산자는 나눈 나머지를 구한다. 7을 2로 나누면 나머지는 1이다.",
+  },
 ];
 
 // 예시 방 템플릿을 방 내용(RoomSpec)으로 바꿔 코드가 물건 배치를 정하게 한다 (AI가 만든 방과 같은 경로)
@@ -244,6 +307,7 @@ function buildRoom(theme: ThemeId, difficulty: Difficulty, index: number, roomCo
     fake: set.fake,
     views: tpl.views,
     lockedSlot: index > 0 ? tpl.lockedSlot : undefined,
+    codeLang: tpl.codeLang,
   };
   return layoutRoom(spec, difficulty, index, roomCount);
 }
@@ -257,7 +321,8 @@ export interface SampleOptions {
 }
 
 export function sampleCreateGame(o: SampleOptions): GameData {
-  const roomCount = computeRoomCount(CONCEPTS.length, o.mode);
+  // 예시는 방 4개(코드 자물쇠 방 포함)로 고정한다. AI를 부르지 않는 시연용이라 게임 길이 선택과 무관하다.
+  const roomCount = TEMPLATES.length;
   const game: GameData = {
     subject: o.subject.trim() || SAMPLE_SUBJECT,
     theme: o.theme,
@@ -270,6 +335,8 @@ export function sampleCreateGame(o: SampleOptions): GameData {
     review: REVIEW,
     material: SAMPLE_MATERIAL,
     isSample: true,
+    codeLang: SAMPLE_CODE.lang,
+    codeRoomIdx: TEMPLATES.findIndex((t) => t.codeLang),
   };
   game.rooms = [buildRoom(o.theme, o.difficulty, 0, roomCount)]; // 첫 방만 먼저 만든다
   return game;
