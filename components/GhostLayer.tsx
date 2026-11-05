@@ -50,7 +50,7 @@ export default function GhostLayer({ enabled, ratio }: Props) {
     <div className="ghost-layer" aria-hidden="true">
       <div
         key={ghost.id}
-        className="ghost"
+        className="specter"
         style={{ left: `${ghost.left}%`, ["--dir" as string]: ghost.dir, ["--size" as string]: ghost.size }}
         onAnimationEnd={() => setGhost(null)}
       >
