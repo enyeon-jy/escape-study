@@ -25,6 +25,11 @@ function limited(ip: string): boolean {
   return recent.length > 40;
 }
 
+// 검사에서 탈락한 AI 응답의 앞부분을 남긴다 (원인 파악용. 키는 응답에 들어 있지 않다)
+function logRejected(label: string, json: unknown) {
+  console.error(`[검사 탈락:${label}] AI 응답 앞부분: ${JSON.stringify(json).slice(0, 700)}`);
+}
+
 function fail(status: number, error: string, code: string) {
   return NextResponse.json({ error, code }, { status });
 }
@@ -40,6 +45,7 @@ export async function POST(req: Request) {
     return fail(400, "요청 형식이 올바르지 않아요.", "BAD_REQUEST");
   }
 
+  const deadline = Date.now() + 55_000; // 서버 함수 제한(60초) 안에서 재시도까지 끝낸다
   const kind = body.kind;
   const material = limitMaterial(typeof body.material === "string" ? body.material : "", MATERIAL_MAX_CHARS);
   const subject = (typeof body.subject === "string" ? body.subject : "").trim().slice(0, 60);
@@ -50,9 +56,14 @@ export async function POST(req: Request) {
       const mode = body.mode as GameMode;
       if (!MODES.includes(mode)) return fail(400, "요청 형식이 올바르지 않아요.", "BAD_REQUEST");
       const result = await withRetry(async () => {
-        const json = await callAI(SYSTEM_PROMPT, conceptsPrompt({ subject, material, mode }));
-        return validateConcepts(json, material);
-      });
+        const json = await callAI(SYSTEM_PROMPT, conceptsPrompt({ subject, material, mode }), deadline);
+        try {
+          return validateConcepts(json, material);
+        } catch (e) {
+          logRejected("개념", json);
+          throw e;
+        }
+      }, "개념");
       return NextResponse.json(result);
     }
 
@@ -85,9 +96,15 @@ export async function POST(req: Request) {
         const json = await callAI(
           SYSTEM_PROMPT,
           roomPrompt({ subject, material, theme, difficulty, index, roomCount, roomConcepts, prevStory }),
+          deadline,
         );
-        return validateRoom(json, difficulty, material);
-      });
+        try {
+          return validateRoom(json, difficulty, material);
+        } catch (e) {
+          logRejected(`방${index + 1}`, json);
+          throw e;
+        }
+      }, `방${index + 1}`);
 
       const { views, lockedSlot } = pickViews(index);
       const room = layoutRoom(

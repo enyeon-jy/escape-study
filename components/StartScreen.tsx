@@ -53,6 +53,7 @@ export default function StartScreen({ saved, onResume, onGameReady }: Props) {
           🔒
         </div>
         <p className="loading-text">방을 만드는 중… 문이 잠기는 소리가 들린다</p>
+        <p className="tip">AI가 강의자료를 읽고 방을 짓고 있어요. 30초 정도 걸릴 수 있어요.</p>
       </section>
     );
   }

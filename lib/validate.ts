@@ -49,26 +49,34 @@ export function validateConcepts(json: unknown, material: string): { concepts: C
   if (ids.size !== concepts.length) throw new Error("개념 id가 겹침");
 
   if (!Array.isArray(json.review)) throw new Error("review가 목록이 아님");
-  const review: ReviewItem[] = json.review.map((r, i) => {
-    if (!isObj(r)) throw new Error(`review[${i}]`);
-    const conceptId = str(r.conceptId, `review[${i}].conceptId`, 20);
-    if (!ids.has(conceptId)) throw new Error(`review[${i}]: 없는 개념 id`);
-    const prompt = str(r.prompt, `review[${i}].prompt`, 200);
-    if (!prompt.includes("____")) throw new Error(`review[${i}]: 빈칸(____)이 없음`);
-    const answer = str(r.answer, `review[${i}].answer`, 24);
-    if (!inMaterial(answer, material)) throw new Error(`review[${i}]: 정답이 자료에 없음 (${answer})`);
-    return {
-      conceptId,
-      prompt,
-      answer,
-      units: r.units === undefined ? [] : strList(r.units, `review[${i}].units`, 5, 10),
-      explanation: str(r.explanation, `review[${i}].explanation`, 200),
-    };
+  // 문제 하나가 규칙을 어기면 그 문제만 버린다 (전체를 다시 요청하면 학교 크레딧이 낭비된다)
+  const dropped: string[] = [];
+  const review: ReviewItem[] = [];
+  json.review.forEach((r, i) => {
+    try {
+      if (!isObj(r)) throw new Error("객체가 아님");
+      const conceptId = str(r.conceptId, "conceptId", 20);
+      if (!ids.has(conceptId)) throw new Error("없는 개념 id");
+      const prompt = str(r.prompt, "prompt", 200);
+      if (!prompt.includes("____")) throw new Error("빈칸(____)이 없음");
+      const answer = str(r.answer, "answer", 24);
+      if (!inMaterial(answer, material)) throw new Error(`정답이 자료에 없음 (${answer})`);
+      review.push({
+        conceptId,
+        prompt,
+        answer,
+        units: r.units === undefined ? [] : strList(r.units, "units", 5, 10),
+        explanation: str(r.explanation, "explanation", 200),
+      });
+    } catch (e) {
+      dropped.push(`review[${i}]: ${e instanceof Error ? e.message : e}`);
+    }
   });
-  for (const c of concepts) {
-    if (!review.some((r) => r.conceptId === c.id)) throw new Error(`개념 ${c.id}의 복습 문제가 없음`);
-  }
-  return { concepts, review };
+  if (dropped.length) console.error(`[검사] 복습 문제 ${dropped.length}개 제외: ${dropped.join(" / ")}`);
+  // 복습 문제가 없는 개념은 게임에서 뺀다
+  const kept = concepts.filter((c) => review.some((r) => r.conceptId === c.id));
+  if (kept.length < 3) throw new Error(`쓸 수 있는 개념이 ${kept.length}개뿐임 (최소 3개). 제외 사유: ${dropped.join(" / ") || "복습 문제 없음"}`);
+  return { concepts: kept, review };
 }
 
 // ── 2) 방 하나 ────────────────────────────────────────────────────────
@@ -109,7 +117,7 @@ function clues(v: unknown, field: string, min: number, max: number): ClueSrc[] {
     if (!isObj(c)) throw new Error(`${field}[${i}]`);
     const format = c.format as ClueFormat;
     if (!FORMATS.includes(format)) throw new Error(`${field}[${i}].format 잘못됨`);
-    return { format, title: str(c.title, `${field}[${i}].title`, 30), lines: strList(c.lines, `${field}[${i}].lines`, 4, 140, 1) };
+    return { format, title: str(c.title, `${field}[${i}].title`, 30), lines: strList(c.lines, `${field}[${i}].lines`, 5, 160, 1) };
   });
 }
 
@@ -123,9 +131,14 @@ export function validateRoom(json: unknown, difficulty: Difficulty, material: st
   if (!LOCK_TYPES.includes(lockType)) throw new Error("lock.type 잘못됨");
   const answer = str(lock.answer, "lock.answer", 12);
   if (!answerFitsLock(lockType, answer)) throw new Error(`정답(${answer})이 자물쇠 종류(${lockType})와 맞지 않음`);
-  if (lockType !== "direction" && !inMaterial(answer, material)) throw new Error(`정답이 자료에 없음 (${answer})`);
 
-  const hints = strList(lock.hints, "lock.hints", 4, 120, Math.max(1, cfg.hintsPerRoom));
+  // 자료에 없는 내용을 지어내지 않았는지: 문제의 근거를 자료에서 글자 그대로 베껴 와야 한다.
+  // (정답이 "개수 세기"나 "두 수 이어 붙이기"처럼 계산된 값일 수 있어서, 정답 값 자체가 아니라 근거 문장을 확인한다)
+  const quotes = strList(lock.sourceQuotes, "lock.sourceQuotes", 3, 160, 1);
+  const missing = quotes.filter((q) => squash(q).length < 6 || !squash(material).includes(squash(q)));
+  if (missing.length) throw new Error(`근거 문장이 자료에 그대로 없음: "${missing[0].slice(0, 40)}"`);
+
+  const hints = strList(lock.hints, "lock.hints", 4, 160, Math.max(1, cfg.hintsPerRoom));
   const real = clues(json.realClues, "realClues", cfg.realClues[0], cfg.realClues[1]);
   const fake = clues(json.fakeClues ?? [], "fakeClues", cfg.fakeClues, cfg.fakeClues);
 
@@ -136,16 +149,16 @@ export function validateRoom(json: unknown, difficulty: Difficulty, material: st
   if (lockType !== "direction" && literal) throw new Error(`단서에 정답(${answer})이 그대로 쓰여 있음`);
 
   return {
-    name: str(json.name, "name", 24),
-    situation: str(json.situation, "situation", 140),
-    story: str(json.story, "story", 160),
+    name: str(json.name, "name", 30),
+    situation: str(json.situation, "situation", 160),
+    story: str(json.story, "story", 200),
     lockType,
-    question: str(lock.question, "lock.question", 100),
+    question: str(lock.question, "lock.question", 120),
     answer: lockType === "direction" || lockType === "dial-alpha" ? answer.toUpperCase() : answer,
     units: lock.units === undefined ? [] : strList(lock.units, "lock.units", 6, 10),
     hints,
-    explanation: str(lock.explanation, "lock.explanation", 220),
-    professorLine: str(json.professorLine, "professorLine", 90),
+    explanation: str(lock.explanation, "lock.explanation", 260),
+    professorLine: str(json.professorLine, "professorLine", 100),
     real,
     fake,
   };
