@@ -41,6 +41,7 @@ export default function LockDemo() {
           </div>
           <p className="tip">{d.hint}</p>
           <LockPanel
+            theme="horror"
             key={`${i}-${round}`}
             lock={d.lock}
             onSolved={() => {

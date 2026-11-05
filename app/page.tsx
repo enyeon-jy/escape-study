@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { GameData, GameResult, Progress, Room } from "@/lib/types";
+import type { GameData, GameResult, Progress, Room, ThemeId } from "@/lib/types";
 import { clearSnapshot, loadSnapshot, saveSnapshot, type Snapshot } from "@/lib/save";
 import StartScreen from "@/components/StartScreen";
 import EscapeScreen from "@/components/EscapeScreen";
@@ -17,6 +17,7 @@ export default function Home() {
   const [initialProgress, setInitialProgress] = useState<Progress | null>(null);
   const [attempt, setAttempt] = useState(0); // 바뀌면 방탈출 화면을 새로 시작한다
   const [saved, setSaved] = useState<Snapshot | null>(null);
+  const [preview, setPreview] = useState<ThemeId>("horror"); // 시작 화면에서 고른 테마를 바로 보여 준다
 
   // 저장할 최신 상태. 방이 만들어지거나 진행이 바뀔 때마다 브라우저(localStorage)에 저장한다.
   const snap = useRef<Snapshot | null>(null);
@@ -79,14 +80,14 @@ export default function Home() {
     setScreen("start");
   }
 
-  const theme = game?.theme ?? "horror";
+  const theme = game?.theme ?? preview;
   const mode = screen === "review" ? "study" : "game";
 
   return (
-    <main className="app" data-theme={theme} data-mode={mode}>
+    <main className="app" data-theme={theme} data-mode={mode} data-screen={screen}>
       <div className="bg" aria-hidden="true" />
       <div className="content">
-        {screen === "start" && <StartScreen saved={saved} onResume={onResume} onGameReady={onGameReady} />}
+        {screen === "start" && <StartScreen saved={saved} onResume={onResume} onGameReady={onGameReady} onThemeChange={setPreview} />}
         {screen === "escape" && game && (
           <EscapeScreen
             key={attempt}

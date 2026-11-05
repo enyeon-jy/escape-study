@@ -1,0 +1,39 @@
+/* ── 테마 공통 연출 (테마별 모양은 theme-*.css) ─────────────────────────────
+   빛이 빠르게 번쩍이지 않도록 모든 깜빡임은 느리고 부드럽게만 변한다. */
+@keyframes soft-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+.blink-dot { animation: soft-pulse 2.6s ease-in-out infinite; }
+.timer.danger { animation: soft-pulse 1.8s ease-in-out infinite; }
+.loading-lock { animation: soft-pulse 2.2s ease-in-out infinite; }
+.redlamp { animation: soft-pulse 3.8s ease-in-out infinite; }
+
+/* 천장에서 핏방울이 맺혔다가 떨어진다 (공포) */
+.drip { opacity: 0; transform-box: fill-box; transform-origin: center top; animation: drip 4.6s cubic-bezier(0.45, 0, 0.9, 0.55) infinite; }
+@keyframes drip {
+  0% { opacity: 0; transform: translateY(0) scale(0.4); }
+  20% { opacity: 1; transform: translateY(0) scale(1); }
+  70% { opacity: 1; transform: translateY(var(--fall, 190px)) scaleY(1.5); }
+  72%, 100% { opacity: 0; transform: translateY(var(--fall, 190px)); }
+}
+.splash { opacity: 0; transform-box: fill-box; transform-origin: center; animation: splash 4.6s ease-out infinite; }
+@keyframes splash {
+  0%, 70% { opacity: 0; transform: scale(0.2); }
+  72% { opacity: 0.8; transform: scale(0.3); }
+  100% { opacity: 0; transform: scale(1.8); }
+}
+
+/* 귀신 실루엣: 번쩍이지 않고 아주 천천히 나타났다 사라진다 */
+.ghost-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+.ghost { position: absolute; bottom: 12%; opacity: 0; filter: blur(1.4px); transform-origin: bottom center; animation: ghost 8s ease-in-out forwards; }
+@keyframes ghost {
+  0% { opacity: 0; transform: translateX(0) scale(var(--size, 1)); }
+  28% { opacity: 0.24; }
+  65% { opacity: 0.2; }
+  100% { opacity: 0; transform: translateX(calc(var(--dir, 1) * 64px)) scale(var(--size, 1)); }
+}
+
+/* "움직임 줄이기" 설정을 켠 사람에게는 피 떨어짐, 귀신, 입자, 빗줄기를 멈춘다 */
+@media (prefers-reduced-motion: reduce) {
+  .drip, .splash, .rain, .particle, .aurora, .rune-spin, .waterfall-flow, .float-bob, .lock-burst { animation: none !important; }
+  .ghost-layer, .particles { display: none; }
+  .timer.danger, .blink-dot, .redlamp { animation: none !important; }
+}

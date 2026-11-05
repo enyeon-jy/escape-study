@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { DIRECTION_SYMBOL, LOCK_NAME, checkLock, cleanAnswer, dialWheels, type LockLike } from "@/lib/lock";
+import { DIRECTION_SYMBOL, checkLock, cleanAnswer, dialWheels, type LockLike } from "@/lib/lock";
 import { sfx } from "@/lib/sound";
+import { THEME_NAMES } from "@/lib/themes";
+import type { ThemeId } from "@/lib/types";
 
 interface Props {
+  theme: ThemeId;
   lock: LockLike;
   onSolved: () => void;
   onWrong: () => void;
@@ -16,6 +19,7 @@ type Status = "idle" | "wrong" | "ok";
 const DIGITS = "0123456789".split("");
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const STEP_PX = 26; // 이만큼 쓸어야 한 칸 돌아간다
+const RUNES = "ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊ".split(""); // 이세계 마법 다이얼에 새겨진 룬 문자(장식)
 
 // 위아래로 쓸거나 ▲▼ 버튼, 마우스 휠로 돌리는 숫자/글자 바퀴
 function Wheel({ symbols, index, onStep, disabled }: { symbols: string[]; index: number; onStep: (d: number) => void; disabled: boolean }) {
@@ -67,7 +71,8 @@ function Wheel({ symbols, index, onStep, disabled }: { symbols: string[]; index:
   );
 }
 
-export default function LockPanel({ lock, onSolved, onWrong, onClose }: Props) {
+export default function LockPanel({ theme, lock, onSolved, onWrong, onClose }: Props) {
+  const names = THEME_NAMES[theme];
   const answer = cleanAnswer(lock.type, lock.answer);
   const isDial = lock.type === "dial-number" || lock.type === "dial-alpha";
   const wheels = isDial ? dialWheels(lock) : 0;
@@ -121,11 +126,19 @@ export default function LockPanel({ lock, onSolved, onWrong, onClose }: Props) {
 
   return (
     <div className={`lockpanel type-${lock.type} ${status}`}>
-      <h3>{LOCK_NAME[lock.type]}</h3>
+      <div className="lock-burst" aria-hidden="true" />
+      <h3>{lock.type === "keypad" ? names.lockName.keypad : lock.type === "direction" ? names.lockName.direction : names.lockName.dial}</h3>
 
       {isDial && (
         <>
           <div className={`padlock ${status === "ok" ? "open" : ""} ${status === "wrong" ? "shake" : ""}`}>
+            <div className="rune-ring" aria-hidden="true">
+              {RUNES.map((r, i) => (
+                <span key={i} style={{ transform: `rotate(${(i * 360) / RUNES.length}deg) translateY(-92px)` }}>
+                  {r}
+                </span>
+              ))}
+            </div>
             <div className="shackle" />
             <div className="padlock-body">
               {vals.map((v, i) => (
@@ -134,11 +147,11 @@ export default function LockPanel({ lock, onSolved, onWrong, onClose }: Props) {
             </div>
           </div>
           <p className="tip">
-            위아래로 쓸어서 돌려요.
+            {names.lockTip}
             {lock.type === "dial-number" ? " 빈 앞자리는 0으로 두세요." : ""}
           </p>
           <button type="button" className="btn primary" disabled={status !== "idle"} onClick={() => judge(dialValue)}>
-            열기
+            {names.openLabel}
           </button>
         </>
       )}

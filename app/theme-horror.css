@@ -1,0 +1,72 @@
+/* ── 공포: 폐교 실험실 ─────────────────────────────────────────────
+   붉은 비상등, 곰팡이 낀 타일, 긁힌 손글씨. 분위기 연출까지만 쓰고 상처·신체 훼손 묘사는 넣지 않는다. */
+.app[data-theme="horror"][data-screen="escape"] { --font-display: "East Sea Dokdo", "Nanum Pen Script", cursive; --accent: #ff4a3a; }
+
+.app[data-theme="horror"][data-screen="escape"] .bg {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(120, 10, 10, 0.35), transparent 60%),
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url("/backgrounds/%EA%B3%B5%ED%8F%AC.png") center / cover no-repeat,
+    radial-gradient(ellipse at top, #2a0a0a, #060808 72%);
+}
+
+.app[data-theme="horror"][data-screen="escape"] .room-name { font-family: var(--font-display); font-size: 2.2rem; font-weight: 400; color: #e8c4bc; letter-spacing: 1px; text-shadow: 0 0 10px #7a1010; }
+.app[data-theme="horror"][data-screen="escape"] .story { font-family: var(--font-display); font-size: 1.35rem; color: #c97a70; }
+.app[data-theme="horror"][data-screen="escape"] .situation { color: #b9c4c2; }
+.app[data-theme="horror"][data-screen="escape"] .intro-story { font-family: var(--font-display); font-size: 1.7rem; line-height: 1.5; color: #e8c4bc; }
+.app[data-theme="horror"][data-screen="escape"] .title { font-family: var(--font-display); font-size: 3rem; font-weight: 400; color: #c8302a; text-shadow: 0 0 14px #7a1010; }
+
+/* 폭탄 같은 붉은 디지털 타이머 */
+.app[data-theme="horror"][data-screen="escape"] .timer { background: #120202; border: 2px solid #4a0a0a; color: #ff3030; text-shadow: 0 0 10px #ff2a2a99; box-shadow: inset 0 0 12px #000, 0 0 14px #5a0a0a88; }
+
+/* 장면: 어둡게 가라앉은 비네팅 */
+.app[data-theme="horror"] .scene-wrap { border: 2px solid #4a1a1c; border-radius: 6px; box-shadow: 0 0 22px #5a0a0a66; }
+.app[data-theme="horror"] .scene-wrap::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1; background: radial-gradient(ellipse at 50% 45%, transparent 45%, rgba(0, 0, 0, 0.62) 100%); }
+.app[data-theme="horror"] .hotspot:hover > *:not(.check):not(title),
+.app[data-theme="horror"] .hotspot:focus-visible > *:not(.check):not(title) { filter: brightness(1.45) drop-shadow(0 0 5px #ff7a6a); }
+.app[data-theme="horror"] .turn-btn, .app[data-theme="horror"] .back-btn { background: rgba(20, 4, 4, 0.7); color: #ffb8aa; border: 1px solid #5a1a1a; }
+.app[data-theme="horror"] .wall-label { font-family: var(--font-display); font-size: 1.1rem; background: rgba(20, 4, 4, 0.65); color: #e8c4bc; }
+.app[data-theme="horror"] .slot-label { fill: #e8c4bc; font-family: var(--font-display); font-size: 15px; }
+.app[data-theme="horror"] .toast { background: rgba(16, 3, 3, 0.9); border-color: #6a1a1a; color: #f0d0c8; font-family: var(--font-display); font-size: 1.2rem; }
+.app[data-theme="horror"] .unlock-msg { font-family: var(--font-display); font-size: 1.8rem; color: #ffd9c8; }
+
+/* 가방·수첩·힌트 칸: 녹슨 철제 서랍 느낌 */
+.app[data-theme="horror"][data-screen="escape"] .bag,
+.app[data-theme="horror"][data-screen="escape"] .notebook,
+.app[data-theme="horror"][data-screen="escape"] .tutorial,
+.app[data-theme="horror"][data-screen="escape"] .reveal-box,
+.app[data-theme="horror"][data-screen="escape"] .empty-msg { background: #111a1b; border: 1px solid #3a2224; box-shadow: inset 0 0 18px #000; }
+.app[data-theme="horror"][data-screen="escape"] .bag h3,
+.app[data-theme="horror"][data-screen="escape"] .notebook h3 { font-family: var(--font-display); font-size: 1.4rem; font-weight: 400; color: #e8c4bc; }
+.app[data-theme="horror"][data-screen="escape"] .bag button { background: #1d2627; border-color: #4a3a3a; }
+.app[data-theme="horror"][data-screen="escape"] .bag button.selected { border-color: #ff7a6a; box-shadow: 0 0 8px #ff4a3a88; }
+.app[data-theme="horror"][data-screen="escape"] .notebook button { font-family: var(--font-display); font-size: 1.15rem; background: #d3c6a8; color: #5c0b0b; border-radius: 2px; transform: rotate(-1deg); }
+.app[data-theme="horror"][data-screen="escape"] .notebook li:nth-child(even) button { transform: rotate(1.2deg); }
+.app[data-theme="horror"][data-screen="escape"] .btn.primary { background: #8f1b22; border-color: #b3202a; }
+.app[data-theme="horror"][data-screen="escape"] .btn { border-color: #4a3a3a; }
+.app[data-theme="horror"][data-screen="escape"] .hints .btn { border-color: #6a5a2a; color: #ffe9a8; }
+
+/* 단서 카드: 피로 쓴 쪽지. 긁힌 손글씨와 구겨진 종이, 위에서 흘러내린 자국 */
+.app[data-theme="horror"] .clue-card { position: relative; overflow: hidden; font-family: var(--font-display, "East Sea Dokdo", cursive); font-size: 1.4rem; line-height: 1.25; color: #6a0d0d; background: #d7cbae; background-image: radial-gradient(circle at 15% 20%, rgba(90, 60, 30, 0.22), transparent 38%), radial-gradient(circle at 85% 80%, rgba(60, 40, 20, 0.28), transparent 42%), repeating-linear-gradient(7deg, rgba(0, 0, 0, 0.03) 0 2px, transparent 2px 6px); border-radius: 2px; box-shadow: inset 0 0 26px rgba(60, 40, 20, 0.35); clip-path: polygon(0 2%, 8% 0, 22% 1.5%, 40% 0, 58% 1.2%, 76% 0, 92% 1.6%, 100% 0, 99% 30%, 100% 62%, 98.5% 100%, 80% 98.5%, 60% 100%, 38% 98.6%, 20% 100%, 0 98.4%, 1.2% 66%, 0 34%); padding: 22px 20px 20px; }
+.app[data-theme="horror"] .clue-card h3 { font-weight: 400; font-size: 1.8rem; border-bottom: 2px solid #7a1010; display: inline-block; padding-bottom: 2px; transform: rotate(-1deg); }
+.app[data-theme="horror"] .clue-card::before { content: ""; position: absolute; left: 18px; top: 0; width: 5px; height: 34px; background: #7a1010; border-radius: 0 0 5px 5px; box-shadow: 120px 0 0 -1px #7a1010, 210px 0 0 0 #7a1010; opacity: 0.85; }
+.app[data-theme="horror"] .clue-card::after { content: ""; position: absolute; left: 14px; top: 28px; width: 13px; height: 13px; background: #7a1010; border-radius: 50%; box-shadow: 120px 6px 0 -2px #7a1010, 210px -2px 0 -1px #7a1010; opacity: 0.85; }
+.app[data-theme="horror"] .clue-note { background-color: #d7cbae; }
+.app[data-theme="horror"] .clue-diary { background-color: #c9b891; border-left: 0; font-style: normal; color: #4e1010; }
+.app[data-theme="horror"] .clue-document { background-color: #cfd0c6; font-family: "Nanum Gothic Coding", monospace; font-size: 0.95rem; color: #3a1010; border: 0; }
+.app[data-theme="horror"] .clue-document h3 { font-family: var(--font-display); }
+.app[data-theme="horror"] .clue-document h3::after { content: " 접근 금지"; color: #b3202a; font-size: 1rem; }
+.app[data-theme="horror"] .clue-recording, .app[data-theme="horror"] .clue-sms, .app[data-theme="horror"] .clue-chat { background-color: #0d1314; background-image: none; color: #e5b8ae; box-shadow: inset 0 0 26px #000; }
+.app[data-theme="horror"] .clue-recording p::before { color: #ff3a3a; }
+.app[data-theme="horror"] .bubble { background: #4a1216; color: #f0d0c8; border: 1px solid #7a1c22; }
+
+/* 자물쇠: 녹슨 쇠 다이얼과 붉은 비상 도어락 */
+.app[data-theme="horror"] .lockpanel { background: #0f1718; border-color: #4a2a2a; box-shadow: inset 0 0 24px #000; }
+.app[data-theme="horror"] .lockpanel h3 { font-family: var(--font-display); font-weight: 400; font-size: 1.7rem; color: #e8c4bc; }
+.app[data-theme="horror"] .padlock-body { background: linear-gradient(#7a6552, #3d3026); border-color: #2a1d12; box-shadow: inset 0 0 12px #000, 0 0 0 2px #5a3a22; }
+.app[data-theme="horror"] .shackle { border-color: #8a8f8a; }
+.app[data-theme="horror"] .wheel { background: #0c0c0c; color: #f2c9b8; }
+.app[data-theme="horror"] .wheel-btn { background: #3d2a1c; color: #e0b898; }
+.app[data-theme="horror"] .keypad, .app[data-theme="horror"] .dirlock { background: #151a1b; border-color: #4a3030; }
+.app[data-theme="horror"] .keypad-display { background: #1a0606; color: #ff5a4a; text-shadow: 0 0 8px #ff3a2a88; }
+.app[data-theme="horror"] .key { background: #232b2c; border-color: #4a3a3a; color: #e8c4bc; }

@@ -6,11 +6,12 @@ import { DIFFICULTY, MATERIAL_MAX_CHARS, ROOMS } from "@/lib/config";
 import { SAMPLE_MATERIAL, SAMPLE_SUBJECT } from "@/lib/sample";
 import { createGame } from "@/lib/gameFactory";
 import type { Snapshot } from "@/lib/save";
+import { THEME_TAGLINE } from "@/lib/themes";
 
 const THEMES: { id: ThemeId; name: string; desc: string }[] = [
-  { id: "horror", name: "공포", desc: "폐교된 학교 실험실" },
-  { id: "isekai", name: "이세계 탈출", desc: "마법진이 빛나는 판타지 세계" },
-  { id: "detective", name: "추리", desc: "사건 현장 연구실" },
+  { id: "horror", name: "공포", desc: THEME_TAGLINE.horror },
+  { id: "isekai", name: "이세계 탈출", desc: THEME_TAGLINE.isekai },
+  { id: "detective", name: "추리", desc: THEME_TAGLINE.detective },
 ];
 
 const MODES: { id: GameMode; name: string; desc: string }[] = [
@@ -22,9 +23,10 @@ interface Props {
   saved: Snapshot | null;
   onResume: () => void;
   onGameReady: (game: GameData) => void;
+  onThemeChange?: (theme: ThemeId) => void;
 }
 
-export default function StartScreen({ saved, onResume, onGameReady }: Props) {
+export default function StartScreen({ saved, onResume, onGameReady, onThemeChange }: Props) {
   const [subject, setSubject] = useState("");
   const [material, setMaterial] = useState("");
   const [theme, setTheme] = useState<ThemeId>("horror");
@@ -94,7 +96,10 @@ export default function StartScreen({ saved, onResume, onGameReady }: Props) {
         <span>테마</span>
         <div className="theme-cards">
           {THEMES.map((t) => (
-            <button key={t.id} type="button" className={`theme-card ${theme === t.id ? "selected" : ""}`} onClick={() => setTheme(t.id)} aria-pressed={theme === t.id}>
+            <button key={t.id} type="button" className={`theme-card ${theme === t.id ? "selected" : ""}`} onClick={() => {
+                setTheme(t.id);
+                onThemeChange?.(t.id);
+              }} aria-pressed={theme === t.id}>
               <strong>{t.name}</strong>
               <small>{t.desc}</small>
             </button>

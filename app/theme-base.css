@@ -1,0 +1,3 @@
+/* 모든 테마가 함께 쓰는 기본값: 룬 장식과 열릴 때 퍼지는 빛은 이세계에서만 보인다 */
+.rune-ring, .lock-burst { display: none; }
+.lockpanel { position: relative; }

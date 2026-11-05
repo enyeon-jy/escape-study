@@ -4,12 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import type { Clue, GameData, GameResult, Item, Progress, Room, RoomView, ViewId } from "@/lib/types";
 import { DIFFICULTY, STORY_INTRO } from "@/lib/config";
 import { createRoom } from "@/lib/gameFactory";
-import { SPOT_LABEL, WALL_LABEL, WALL_ORDER, type WallId } from "@/lib/scenes";
-import { isMuted, setMuted, sfx } from "@/lib/sound";
+import { WALL_ORDER, type WallId } from "@/lib/scenes";
+import { THEME_NAMES, shapeLabel, spotLabel, wallLabel } from "@/lib/themes";
+import { ambience, isMuted, setMuted, setSoundTheme, sfx } from "@/lib/sound";
 import RoomScene from "./RoomScene";
 import ZoomView from "./ZoomView";
 import ClueCard from "./ClueCard";
 import LockPanel from "./LockPanel";
+import GhostLayer from "./GhostLayer";
+import type { ThemeId } from "@/lib/types";
 
 interface Props {
   game: GameData;
@@ -49,11 +52,11 @@ interface SpotInfo {
   lockedBy?: string;
 }
 
-function findSpot(room: Room, id: string): SpotInfo | null {
-  if (id in room.wallSpots) return { label: SPOT_LABEL[id] ?? id, content: room.wallSpots[id] };
+function findSpot(room: Room, id: string, theme: ThemeId): SpotInfo | null {
+  if (id in room.wallSpots) return { label: spotLabel(theme, id), content: room.wallSpots[id] };
   for (const v of room.views) {
     const s = v.slots.find((x) => x.id === id);
-    if (s) return { label: s.label, content: s.content, lockedBy: s.lockedBy };
+    if (s) return { label: shapeLabel(theme, s.shape), content: s.content, lockedBy: s.lockedBy };
   }
   return null;
 }
@@ -79,6 +82,14 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
   const [muted, setMutedState] = useState(false);
 
   useEffect(() => setMutedState(isMuted()), []);
+
+  // 테마에 맞는 효과음과 배경 소리. 소개 화면의 버튼을 누른 뒤부터 흐른다.
+  useEffect(() => {
+    setSoundTheme(game.theme);
+    if (intro) return;
+    ambience.start(game.theme);
+    return () => ambience.stop();
+  }, [game.theme, intro]);
 
   // 방 미리 만들기 상태
   const loadingIdx = useRef<number | null>(null);
@@ -184,7 +195,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
 
   function pressSpot(id: string) {
     if (!room || opened || finished.current) return;
-    const info = findSpot(room, id);
+    const info = findSpot(room, id, game.theme);
     if (!info) {
       setToast("아무것도 없다.");
       return;
@@ -323,7 +334,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
   const idx = WALL_ORDER.indexOf(wall);
 
   return (
-    <section className="screen">
+    <section className="screen" data-theme={game.theme}>
       <header className="hud">
         <span className="room-count">
           방 {p.roomIdx + 1} / {game.roomCount}
@@ -352,6 +363,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
       <div className={`scene-wrap ${opened ? "unlocked" : ""}`}>
         {zoomView ? (
           <ZoomView
+            theme={game.theme}
             view={zoomView}
             inspected={p.inspected}
             unlocked={p.unlocked}
@@ -361,6 +373,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
         ) : (
           <>
             <RoomScene
+              theme={game.theme}
               wall={wall}
               views={room.views.map((v) => v.id)}
               inspected={p.inspected}
@@ -375,11 +388,12 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
             <button type="button" className="turn-btn right" onClick={() => turn(1)} disabled={idx === WALL_ORDER.length - 1} aria-label="오른쪽으로 돌아보기">
               →
             </button>
-            <span className="wall-label">{WALL_LABEL[wall]}</span>
+            <span className="wall-label">{wallLabel(game.theme, wall)}</span>
           </>
         )}
-        {opened && <div className="unlock-msg">철컥! {room.isFinal ? "탈출구가 열렸다!" : "다음 방으로…"}</div>}
+        {opened && <div className="unlock-msg">{THEME_NAMES[game.theme].openMsg} {room.isFinal ? "탈출구가 열렸다!" : "다음 방으로…"}</div>}
         {toast && <div className="toast">{toast}</div>}
+        <GhostLayer enabled={game.theme === "horror" && game.surprise && !intro} ratio={p.remaining / cfg.roomSec} />
       </div>
 
       {p.roomIdx === 0 && tipOpen && (
@@ -399,7 +413,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
       )}
 
       <section className="bag" aria-label="가방">
-        <h3>🎒 가방</h3>
+        <h3>{THEME_NAMES[game.theme].bag}</h3>
         {bagItems.length === 0 ? (
           <p className="tip">비어 있어요. 열쇠 같은 아이템을 찾으면 여기에 들어가요.</p>
         ) : (
@@ -433,7 +447,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
       </div>
 
       <section className="notebook" aria-label="단서 수첩">
-        <h3>📓 단서 수첩 ({found.length}개)</h3>
+        <h3>{THEME_NAMES[game.theme].notebook} ({found.length}개)</h3>
         {found.length === 0 ? (
           <p className="tip">아직 찾은 단서가 없어요.</p>
         ) : (
@@ -470,7 +484,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
                 </button>
               </div>
             )}
-            {modal.type === "lock" && <LockPanel lock={room.lock} onSolved={solved} onWrong={wrong} onClose={() => setModal(null)} />}
+            {modal.type === "lock" && <LockPanel theme={game.theme} lock={room.lock} onSolved={solved} onWrong={wrong} onClose={() => setModal(null)} />}
             {modal.type !== "lock" && (
               <button type="button" className="btn ghost close" onClick={() => setModal(null)}>
                 닫기
