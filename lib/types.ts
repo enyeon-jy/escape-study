@@ -4,9 +4,9 @@ export type ThemeId = "horror" | "isekai" | "detective";
 export type Difficulty = "easy" | "normal" | "hard";
 export type GameMode = "quick" | "full";
 
-export type ClueFormat = "note" | "diary" | "chat" | "document" | "sms" | "recording";
+export type ClueFormat = "note" | "diary" | "chat" | "document" | "sms" | "recording" | "code"; // code: 컴퓨터 화면에 뜬 코드 (프로그래밍 과목의 코드 자물쇠 방)
 export type ViewId = "shelf" | "desk" | "cabinet"; // 클로즈업 화면 (방마다 2~3개)
-export type SlotShape = "drawer" | "notebook" | "cup" | "box" | "book";
+export type SlotShape = "drawer" | "notebook" | "cup" | "box" | "book" | "monitor";
 
 export interface Concept {
   id: string;
@@ -68,6 +68,7 @@ export interface Room {
   conceptIds: string[];
   professorLine: string; // 실패했을 때 교수님 대사
   isFinal: boolean; // 탈출구가 있는 마지막 방
+  codeLang?: "python" | "javascript"; // 코드 자물쇠 방이면 코드의 언어 (정답은 코드를 실제로 실행해서 정했다)
 }
 
 export interface ReviewItem {
@@ -90,6 +91,8 @@ export interface GameData {
   review: ReviewItem[];
   material: string; // 붙여넣은 자료(최대 8,000자). 다음 방을 만들 때 다시 쓴다
   isSample?: boolean; // 예시 자료로 시작한 게임 (AI를 부르지 않는다)
+  codeLang?: "python" | "javascript"; // 프로그래밍 과목이면 코드 자물쇠 방의 언어 (아니면 없음)
+  codeRoomIdx?: number; // 코드 자물쇠 방 번호 (방은 하나만)
 }
 
 // 방탈출 진행 상황 (브라우저에 저장되어 "이어하기"에 쓰임)

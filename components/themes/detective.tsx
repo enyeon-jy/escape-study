@@ -331,6 +331,18 @@ function SlotArt({ shape }: ShapeProps) {
           <rect x="52" y="36" width="16" height="12" fill="#f4f0e0" stroke="#8a7a52" />
         </>
       );
+    case "monitor":
+      // 사무실의 낡은 베이지색 모니터
+      return (
+        <>
+          <rect x="8" y="6" width="64" height="46" rx="5" fill="#c9bb98" stroke="#6a5a38" strokeWidth="2" />
+          <rect x="14" y="12" width="52" height="34" rx="2" fill="#0e1a10" />
+          <path d="M18 20 H44 M18 27 H54 M18 34 H38" stroke="#ffcf6a" strokeWidth="2" opacity="0.85" />
+          <circle cx="62" cy="49" r="1.8" fill="#c0221c" />
+          <rect x="32" y="52" width="16" height="6" fill="#b8aa88" />
+          <rect x="20" y="58" width="40" height="5" rx="2" fill="#c9bb98" stroke="#6a5a38" />
+        </>
+      );
     case "book":
       return (
         <>

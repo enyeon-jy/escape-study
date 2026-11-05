@@ -1,5 +1,9 @@
 import { AI_ERROR_MESSAGE, MATERIAL_MAX_CHARS } from "./config";
+import { codeRoomIndex, detectCodeLang } from "./code/detect";
+import { finalizeCodeRoom } from "./code/finalize";
+import { runCode } from "./code/run";
 import { computeRoomCount, limitMaterial } from "./rooms";
+import type { CodeRoomPayload } from "./validateCode";
 import { SAMPLE_MATERIAL, sampleCreateGame, sampleCreateRoom } from "./sample";
 import type { Concept, Difficulty, GameData, GameMode, ReviewItem, Room, ThemeId } from "./types";
 
@@ -66,14 +70,49 @@ export async function createGame(o: CreateGameOptions): Promise<GameData> {
     review,
     material,
   };
+  // 프로그래밍 과목(파이썬·자바스크립트)이면 방 하나를 코드 자물쇠 방으로 한다. 아니면 코드 방은 나오지 않는다.
+  const codeLang = detectCodeLang(o.subject, material);
+  if (codeLang) {
+    game.codeLang = codeLang;
+    game.codeRoomIdx = codeRoomIndex(game.roomCount);
+  }
   game.rooms = [await createRoom(game, 0)]; // 첫 방만 먼저 만든다. 나머지는 플레이하는 동안 미리 만든다
   return game;
+}
+
+// 코드 자물쇠 방: AI가 코드를 만들면 브라우저가 실제로 실행해서 정답을 정한다.
+// 실행이 안 되거나 오래 걸리거나 정답이 자물쇠에 안 맞으면 Error → 호출한 쪽이 일반 방으로 대체한다.
+async function createCodeRoom(game: GameData, index: number): Promise<Room> {
+  const lang = game.codeLang!;
+  const { code } = await post<{ code: CodeRoomPayload }>({
+    kind: "coderoom",
+    subject: game.subject,
+    material: game.material,
+    theme: game.theme,
+    difficulty: game.difficulty,
+    lang,
+    index,
+    roomCount: game.roomCount,
+    concepts: game.concepts,
+    prevStory: game.rooms[index - 1]?.story,
+  });
+  const run = await runCode(lang, code.source);
+  if (!run.ok) throw new Error(`코드 실행 실패: ${run.reason}`);
+  return finalizeCodeRoom(game, index, code, run.output);
 }
 
 export async function createRoom(game: GameData, index: number): Promise<Room> {
   if (game.isSample) {
     await wait(300);
     return sampleCreateRoom(game, index);
+  }
+  if (game.codeLang && index === game.codeRoomIdx) {
+    try {
+      return await createCodeRoom(game, index);
+    } catch (e) {
+      // 코드 문제는 빼고 일반 방으로 대체한다 (게임이 멈추지 않게)
+      console.warn("[코드방] 일반 방으로 대체:", e instanceof Error ? e.message : e);
+    }
   }
   const { room } = await post<{ room: Room }>({
     kind: "room",

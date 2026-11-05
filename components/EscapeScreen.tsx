@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Clue, GameData, GameResult, Item, Progress, Room, RoomView, ViewId } from "@/lib/types";
 import { DIFFICULTY, STORY_INTRO } from "@/lib/config";
 import { createRoom } from "@/lib/gameFactory";
+import { warmPython } from "@/lib/code/run";
 import { WALL_ORDER, type WallId } from "@/lib/scenes";
 import { THEME_NAMES, shapeLabel, spotLabel, wallLabel } from "@/lib/themes";
 import { ambience, isMuted, setMuted, setSoundTheme, sfx } from "@/lib/sound";
@@ -83,6 +84,12 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
   const [muted, setMutedState] = useState(false);
 
   useEffect(() => setMutedState(isMuted()), []);
+
+  // 파이썬 코드 방이 아직 안 만들어졌다면 실행 도구를 미리 내려받아 둔다 (기다리지 않게)
+  useEffect(() => {
+    if (game.codeLang === "python" && game.codeRoomIdx !== undefined && !game.rooms[game.codeRoomIdx] && !game.isSample) warmPython();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 테마에 맞는 효과음과 배경 소리. 소개 화면의 버튼을 누른 뒤부터 흐른다.
   useEffect(() => {

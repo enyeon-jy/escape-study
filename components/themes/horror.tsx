@@ -368,6 +368,18 @@ function SlotArt({ shape }: ShapeProps) {
           <rect x="20" y="10" width="40" height="9" rx="2" fill="#22282a" />
         </>
       );
+    case "monitor":
+      // 폐교에 버려진 낡은 모니터: 깨진 유리 너머로 초록 글자가 희미하게 보인다
+      return (
+        <>
+          <rect x="8" y="6" width="64" height="46" rx="5" fill="#2a2e2c" stroke="#566468" strokeWidth="2" />
+          <rect x="14" y="12" width="52" height="34" rx="2" fill="#07140d" />
+          <path d="M18 20 H44 M18 27 H54 M18 34 H38" stroke="#4aff8a" strokeWidth="2" opacity="0.7" />
+          <path d="M44 12 L38 30 L50 46" stroke="#d9e8e6" strokeWidth="0.9" fill="none" opacity="0.6" />
+          <rect x="32" y="52" width="16" height="6" fill="#3a403f" />
+          <rect x="22" y="58" width="36" height="5" rx="2" fill="#2a2e2c" stroke="#566468" />
+        </>
+      );
     case "book":
       return (
         <>

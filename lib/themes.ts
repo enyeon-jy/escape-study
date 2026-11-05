@@ -22,7 +22,7 @@ export const THEME_NAMES: Record<ThemeId, ThemeNames> = {
   horror: {
     view: { shelf: "표본 선반", desk: "녹슨 수술대", cabinet: "약품 캐비닛" },
     spot: { frame: "빛바랜 사진", board: "금 간 칠판", trash: "깨진 약병 상자" },
-    shape: { drawer: "녹슨 서랍", notebook: "실험 일지", cup: "비커", box: "표본병", book: "낡은 교본" },
+    shape: { drawer: "녹슨 서랍", notebook: "실험 일지", cup: "비커", box: "표본병", book: "낡은 교본", monitor: "낡은 모니터" },
     wall: { left: "왼쪽 벽", front: "앞 벽", right: "오른쪽 벽" },
     lockName: { dial: "녹슨 다이얼 자물쇠", keypad: "비상 도어락", direction: "방향 자물쇠" },
     lockTip: "위아래로 쓸어서 돌려요.",
@@ -35,7 +35,7 @@ export const THEME_NAMES: Record<ThemeId, ThemeNames> = {
   detective: {
     view: { shelf: "서류 캐비닛", desk: "낡은 책상", cabinet: "금고" },
     spot: { frame: "액자", board: "사건 보드", trash: "휴지통" },
-    shape: { drawer: "책상 서랍", notebook: "사건 파일", cup: "머그컵", box: "증거 상자", book: "장부" },
+    shape: { drawer: "책상 서랍", notebook: "사건 파일", cup: "머그컵", box: "증거 상자", book: "장부", monitor: "사무실 컴퓨터" },
     wall: { left: "왼쪽 벽", front: "앞 벽", right: "오른쪽 벽" },
     lockName: { dial: "금고 다이얼", keypad: "사무실 도어락", direction: "방향 자물쇠" },
     lockTip: "위아래로 쓸어서 돌려요.",
@@ -48,7 +48,7 @@ export const THEME_NAMES: Record<ThemeId, ThemeNames> = {
   isekai: {
     view: { shelf: "떠다니는 고서대", desk: "마법진 제단", cabinet: "수정 상자" },
     spot: { frame: "별 거울", board: "룬 석판", trash: "빛나는 수정" },
-    shape: { drawer: "봉인 상자", notebook: "두루마리", cup: "물약병", box: "수정함", book: "마법서" },
+    shape: { drawer: "봉인 상자", notebook: "두루마리", cup: "물약병", box: "수정함", book: "마법서", monitor: "마법 수정 화면" },
     wall: { left: "왼쪽 하늘", front: "정면 하늘", right: "오른쪽 하늘" },
     lockName: { dial: "룬 마법 다이얼", keypad: "룬 문양 판", direction: "방향 봉인" },
     lockTip: "위아래로 쓸어서 룬을 맞춰요.",

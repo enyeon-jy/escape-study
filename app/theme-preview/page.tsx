@@ -17,6 +17,7 @@ const CLUES: Clue[] = [
   { id: "b", kind: "real", format: "document", title: "유출된 문서", lines: ["보안 등급 3", "접근 기록을 확인할 것."] },
   { id: "c", kind: "real", format: "diary", title: "찢어진 일기", lines: ["오늘도 그 소리가 들렸다…"] },
   { id: "d", kind: "real", format: "sms", title: "수상한 문자", lines: ["지금 어디야?", "빨리 나와."] },
+  { id: "f", kind: "real", format: "code", title: "컴퓨터 화면", lines: ["total = 0", "for i in range(1, 6):", "    if i % 2 == 1:", "        total = total + i", "print(total)"] },
   { id: "e", kind: "real", format: "recording", title: "녹음 받아쓰기", lines: ["…들리나?", "답은 세 번째 층이다."] },
 ];
 

@@ -4,9 +4,12 @@ import { layoutRoom, pickViews } from "@/lib/layout";
 import { conceptsForRoom, limitMaterial } from "@/lib/rooms";
 import { withRetry } from "@/lib/retry";
 import { callAI, ConfigError } from "@/lib/server/ai";
+import { codeRoomPrompt } from "@/lib/server/codePrompt";
 import { conceptsPrompt, roomPrompt, SYSTEM_PROMPT } from "@/lib/server/prompts";
 import type { Concept, Difficulty, GameMode, ThemeId } from "@/lib/types";
 import { MAX_CONCEPTS, validateConcepts, validateRoom } from "@/lib/validate";
+import { validateCodeRoom } from "@/lib/validateCode";
+import type { CodeLang } from "@/lib/code/safe";
 
 // AI는 이 서버 함수에서만 부른다. 키(OPENAI_API_KEY)는 서버 환경변수에서만 읽는다.
 export const maxDuration = 60;
@@ -67,7 +70,7 @@ export async function POST(req: Request) {
       return NextResponse.json(result);
     }
 
-    if (kind === "room") {
+    if (kind === "room" || kind === "coderoom") {
       const theme = body.theme as ThemeId;
       const difficulty = body.difficulty as Difficulty;
       const index = Number(body.index);
@@ -91,6 +94,22 @@ export async function POST(req: Request) {
       }
       const prevStory = typeof body.prevStory === "string" ? body.prevStory.slice(0, 200) : undefined;
       const roomConcepts = conceptsForRoom(concepts, index, roomCount);
+
+      // 코드 자물쇠 방: AI는 코드와 단서만 만든다. 정답은 브라우저가 코드를 실행해서 정하므로 서버는 코드를 실행하지 않는다.
+      if (kind === "coderoom") {
+        const lang = body.lang as CodeLang;
+        if (lang !== "python" && lang !== "javascript") return fail(400, "요청 형식이 올바르지 않아요.", "BAD_REQUEST");
+        const code = await withRetry(async () => {
+          const json = await callAI(SYSTEM_PROMPT, codeRoomPrompt({ subject, material, theme, difficulty, lang, index, roomCount, roomConcepts, prevStory }), deadline);
+          try {
+            return validateCodeRoom(json, difficulty, material, lang);
+          } catch (e) {
+            logRejected(`코드방${index + 1}`, json);
+            throw e;
+          }
+        }, `코드방${index + 1}`);
+        return NextResponse.json({ code });
+      }
 
       const payload = await withRetry(async () => {
         const json = await callAI(

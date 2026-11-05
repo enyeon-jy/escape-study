@@ -1,0 +1,29 @@
+/* ── 코드 자물쇠: 컴퓨터 화면에 뜬 코드 ─────────────────────────────
+   모양은 테마마다 다르다: 공포=깨진 초록 화면, 추리=호박색 CRT 모니터, 이세계=빛나는 마법 수정 화면 */
+.clue-code { font-family: "Nanum Gothic Coding", "Courier New", monospace; padding: 14px 12px 12px; }
+.clue-code h3 { margin: 0 0 8px; font-size: 0.95rem; }
+.code-screen { margin: 0; padding: 12px 10px; border-radius: 6px; overflow-x: auto; font: 0.95rem/1.55 "Nanum Gothic Coding", "Courier New", monospace; tab-size: 4; }
+.code-line { display: block; white-space: pre; }
+.code-no { display: inline-block; width: 1.8em; margin-right: 0.8em; text-align: right; opacity: 0.45; user-select: none; }
+.code-note { margin: 10px 2px 0; font-size: 0.85rem; opacity: 0.85; }
+
+/* 공포: 깨진 유리 너머로 보이는 초록 글자 */
+.app[data-theme="horror"] .clue-code { background: #0b0f0e; background-image: none; color: #4aff8a; clip-path: none; font-family: "Nanum Gothic Coding", monospace; font-size: 1rem; box-shadow: 0 0 0 3px #2a2e2c, 0 6px 24px #000c, inset 0 0 26px #000; border-radius: 8px; }
+.app[data-theme="horror"] .clue-code::before, .app[data-theme="horror"] .clue-code::after { display: none; }
+.app[data-theme="horror"] .clue-code h3 { color: #8affb4; border: 0; font-family: "Nanum Gothic Coding", monospace; font-size: 0.95rem; transform: none; }
+.app[data-theme="horror"] .code-screen { background: #05100a; color: #6affa0; text-shadow: 0 0 6px #2aff7a66; border: 1px solid #1a4a2a; background-image: linear-gradient(115deg, transparent 46%, rgba(220, 240, 235, 0.07) 47%, transparent 48%), repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0 1px, transparent 1px 3px); }
+.app[data-theme="horror"] .code-note { color: #c97a70; }
+
+/* 추리: 호박색 CRT 모니터 */
+.app[data-theme="detective"] .clue-code { background: #c9bb98; background-image: none; color: #3a2a12; border-radius: 12px; border: 4px solid #6a5a38; box-shadow: 0 8px 24px #000c; }
+.app[data-theme="detective"] .clue-code::before { display: none; }
+.app[data-theme="detective"] .clue-code h3 { font-family: "Special Elite", monospace; color: #3a2a12; border-bottom: 1px solid #8a7a58; }
+.app[data-theme="detective"] .code-screen { background: #0e1a10; color: #ffcf6a; text-shadow: 0 0 6px #ffa83a66; border: 3px inset #8a7a58; border-radius: 10px; background-image: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.28) 0 1px, transparent 1px 3px); }
+.app[data-theme="detective"] .code-note { color: #4a3a1a; }
+
+/* 이세계: 허공에 떠서 빛나는 마법 수정 화면 */
+.app[data-theme="isekai"] .clue-code { background: #1d1a4a; background-image: radial-gradient(circle at 50% 0%, #4a3aa855, transparent 60%); color: #c8fff2; border: 2px solid #8a6aff; border-radius: 18px; font-family: "Nanum Gothic Coding", monospace; box-shadow: 0 0 26px #6af5d866, inset 0 0 28px #0b0824; }
+.app[data-theme="isekai"] .clue-code h3 { color: #8af5ff; font-family: var(--font-display, "Song Myung", serif); font-size: 1.1rem; }
+.app[data-theme="isekai"] .clue-code h3::before, .app[data-theme="isekai"] .clue-code h3::after { content: ""; }
+.app[data-theme="isekai"] .code-screen { background: rgba(11, 8, 36, 0.85); color: #b8fff0; text-shadow: 0 0 8px #6af5d8aa; border: 1px solid #6a5ca8; border-radius: 12px; }
+.app[data-theme="isekai"] .code-note { color: #c8b0ff; }

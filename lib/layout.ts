@@ -29,6 +29,7 @@ export interface RoomSpec {
   fake: ClueSrc[];
   views: ViewId[]; // 클로즈업 화면 (2~3개)
   lockedSlot?: string; // 열쇠로 여는 칸 (첫 방은 없음)
+  codeLang?: "python" | "javascript"; // 코드 자물쇠 방이면 real 단서 중 format "code" 하나가 모니터에 놓인다
 }
 
 // 클로즈업 화면 안 작은 물건 3칸의 종류
@@ -61,11 +62,14 @@ export function pickViews(index: number): { views: ViewId[]; lockedSlot?: string
 
 export function layoutRoom(spec: RoomSpec, difficulty: Difficulty, index: number, roomCount: number): Room {
   const cfg = DIFFICULTY[difficulty];
-  const real: Clue[] = spec.real.slice(0, cfg.realClues[1]).map((c, i) => ({ id: `${spec.id}-r${i}`, kind: "real", ...c }));
+  const allReal: Clue[] = spec.real.slice(0, cfg.realClues[1]).map((c, i) => ({ id: `${spec.id}-r${i}`, kind: "real", ...c }));
+  // 코드 단서는 모니터 물건에 따로 놓는다 (나머지 단서와 열쇠는 기존 방식대로 배치)
+  const codeClue = allReal.find((c) => c.format === "code");
+  const real = allReal.filter((c) => c !== codeClue);
   const fake: Clue[] = spec.fake.slice(0, cfg.fakeClues).map((c, i) => ({ id: `${spec.id}-f${i}`, kind: "fake", ...c }));
 
   // 첫 방은 열쇠가 없고, 이후 방은 열쇠 1개로 잠긴 칸 하나를 연다
-  const hasKey = index > 0 && !!spec.lockedSlot && real.length >= 2;
+  const hasKey = index > 0 && !!spec.lockedSlot && real.length >= (codeClue ? 1 : 2);
   const key: Item = { id: `${spec.id}-key`, name: "열쇠", icon: "🗝️" };
 
   // 잠긴 칸에는 진짜 단서 하나(마지막 것)를 넣는다
@@ -97,8 +101,19 @@ export function layoutRoom(spec: RoomSpec, difficulty: Difficulty, index: number
     }),
   }));
 
+  // 코드 방: 책상(없으면 첫 클로즈업)의 두 번째 칸이 컴퓨터 모니터가 되어 코드 화면이 뜬다
+  let monitorId: string | null = null;
+  if (codeClue) {
+    const mv = views.find((v) => v.id === "desk") ?? views[0];
+    const ms = mv.slots[1];
+    ms.shape = "monitor";
+    ms.label = "모니터";
+    ms.content = { clueId: codeClue.id };
+    monitorId = ms.id;
+  }
+
   // 열쇠 없이 열려 있는 물건들에 나눠 담는다 (방마다 시작 위치를 돌려서 배치가 달라진다)
-  const containers: string[] = [...WALL_SPOT_IDS, ...views.flatMap((v) => v.slots.filter((s) => !s.lockedBy).map((s) => s.id))];
+  const containers: string[] = [...WALL_SPOT_IDS, ...views.flatMap((v) => v.slots.filter((s) => !s.lockedBy && s.id !== monitorId).map((s) => s.id))];
   const n = containers.length;
   const rot = (index * 2) % n;
   const ordered = [...containers.slice(rot), ...containers.slice(0, rot)];
@@ -119,10 +134,11 @@ export function layoutRoom(spec: RoomSpec, difficulty: Difficulty, index: number
     wallSpots,
     views,
     items: hasKey ? [key] : [],
-    clues: [...openReal, ...fake, ...(lockedClue ? [lockedClue] : [])],
+    clues: [...(codeClue ? [codeClue] : []), ...openReal, ...fake, ...(lockedClue ? [lockedClue] : [])],
     lock: { type: spec.lockType, answer: spec.answer, units: spec.units, hints: spec.hints, explanation: spec.explanation },
     conceptIds: spec.conceptIds,
     professorLine: spec.professorLine,
     isFinal: index === roomCount - 1,
+    ...(spec.codeLang ? { codeLang: spec.codeLang } : {}),
   };
 }

@@ -318,6 +318,15 @@ function SlotArt({ shape }: ShapeProps) {
           <path d="M40 6 V62 M14 26 L66 26" stroke="#e8fff8" strokeWidth="1" opacity="0.6" />
         </>
       );
+    case "monitor":
+      // 공중에 떠 있는 마법 수정 화면
+      return (
+        <>
+          <polygon points="40,4 68,18 68,46 40,60 12,46 12,18" fill="#2a1a6a" fillOpacity="0.7" stroke="#8af5ff" strokeWidth="2" />
+          <path d="M22 24 H46 M22 32 H58 M22 40 H40" stroke="#6af5d8" strokeWidth="2" opacity="0.85" />
+          <ellipse cx="40" cy="64" rx="22" ry="4" fill="#6af5d8" opacity="0.3" />
+        </>
+      );
     case "book":
       // 마법서
       return (

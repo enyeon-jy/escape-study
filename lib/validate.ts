@@ -10,23 +10,23 @@ const FORMATS: ClueFormat[] = ["note", "diary", "chat", "document", "sms", "reco
 
 export const MAX_CONCEPTS = 20;
 
-const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+export const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 
-function str(v: unknown, field: string, max: number, min = 1): string {
+export function str(v: unknown, field: string, max: number, min = 1): string {
   if (typeof v !== "string") throw new Error(`${field}: 글자가 아님`);
   const t = v.trim();
   if (t.length < min || t.length > max) throw new Error(`${field}: 길이 ${t.length} (허용 ${min}~${max})`);
   return t;
 }
 
-function strList(v: unknown, field: string, maxItems: number, maxLen: number, minItems = 0): string[] {
+export function strList(v: unknown, field: string, maxItems: number, maxLen: number, minItems = 0): string[] {
   if (!Array.isArray(v)) throw new Error(`${field}: 목록이 아님`);
   if (v.length < minItems || v.length > maxItems) throw new Error(`${field}: 개수 ${v.length}`);
   return v.map((x, i) => str(x, `${field}[${i}]`, maxLen));
 }
 
 // 비교용으로 공백·구두점을 지우고 소문자로 만든다
-const squash = (s: string) => s.normalize("NFKC").toLowerCase().replace(/[\s.,!?'"`~\-_()[\]{}:;/\\]/g, "");
+export const squash = (s: string) => s.normalize("NFKC").toLowerCase().replace(/[\s.,!?'"`~\-_()[\]{}:;/\\]/g, "");
 
 // 자료에 실제로 있는 값인지 (자료에 없는 정답을 지어내는 것을 막는 안전장치)
 export function inMaterial(answer: string, material: string): boolean {
@@ -110,7 +110,7 @@ export interface RoomPayload {
   fake: ClueSrc[];
 }
 
-function clues(v: unknown, field: string, min: number, max: number): ClueSrc[] {
+export function clues(v: unknown, field: string, min: number, max: number): ClueSrc[] {
   if (!Array.isArray(v)) throw new Error(`${field}: 목록이 아님`);
   if (v.length < min || v.length > max) throw new Error(`${field}: 개수 ${v.length} (허용 ${min}~${max})`);
   return v.map((c, i) => {
