@@ -1,0 +1,81 @@
+/* ── 추리: 탐정 사무실 ─────────────────────────────────────────────
+   세피아 톤, 타자기 글꼴, 비 오는 창. 단서는 사건 파일·도장·찢어진 신문 모양. */
+@keyframes rain-fall { from { transform: translateY(0); } to { transform: translateY(calc(var(--h, 100px) + 24px)); } }
+.rain { animation: rain-fall 1.5s linear infinite; }
+
+.app[data-theme="detective"][data-screen="escape"] { --font-display: "Special Elite", "Nanum Gothic Coding", monospace; --accent: #e0b060; }
+.app[data-theme="detective"][data-screen="escape"] .bg {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(210, 150, 70, 0.22), transparent 60%),
+    linear-gradient(rgba(20, 10, 4, 0.5), rgba(20, 10, 4, 0.5)),
+    url("/backgrounds/%EC%B6%94%EB%A6%AC.png") center / cover no-repeat,
+    radial-gradient(ellipse at top, #3a2616, #0d0805 72%);
+}
+.app[data-theme="detective"][data-screen="escape"] { color: #eadcc0; }
+
+.app[data-theme="detective"][data-screen="escape"] .room-name { font-family: var(--font-display); font-weight: 400; color: #f0e0bc; letter-spacing: 0.5px; border-bottom: 2px dashed #8a6a3a; padding-bottom: 4px; }
+.app[data-theme="detective"][data-screen="escape"] .story { font-family: "Nanum Gothic Coding", monospace; color: #d0a868; }
+.app[data-theme="detective"][data-screen="escape"] .situation { color: #cdbfa0; }
+.app[data-theme="detective"][data-screen="escape"] .intro-story { font-family: "Nanum Gothic Coding", monospace; line-height: 1.8; color: #eadcc0; }
+.app[data-theme="detective"][data-screen="escape"] .title { font-family: var(--font-display); font-weight: 400; color: #f0e0bc; }
+.app[data-theme="detective"][data-screen="escape"] .title.lose { color: #d8503a; }
+.app[data-theme="detective"][data-screen="escape"] .title.win { color: #d8c070; }
+
+/* 타이머: 낡은 계기판 같은 호박색 숫자 */
+.app[data-theme="detective"][data-screen="escape"] .timer { background: #150d06; border: 2px solid #5a4020; color: #ffb43a; text-shadow: 0 0 8px #ff9a1a77; box-shadow: inset 0 0 10px #000; }
+
+.app[data-theme="detective"] .scene-wrap { border: 3px solid #3a2410; border-radius: 4px; box-shadow: 0 0 20px #00000099, inset 0 0 0 1px #8a6a3a55; }
+.app[data-theme="detective"] .scene-wrap::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1; background: radial-gradient(ellipse at 50% 45%, rgba(120, 80, 30, 0.08) 40%, rgba(10, 5, 0, 0.6) 100%); mix-blend-mode: multiply; }
+.app[data-theme="detective"] .scene-wrap svg { filter: sepia(0.55) saturate(0.85) contrast(1.05); }
+.app[data-theme="detective"] .hotspot:hover > *:not(.check):not(title),
+.app[data-theme="detective"] .hotspot:focus-visible > *:not(.check):not(title) { filter: brightness(1.4) drop-shadow(0 0 5px #ffd98a); }
+.app[data-theme="detective"] .turn-btn, .app[data-theme="detective"] .back-btn { background: rgba(26, 14, 6, 0.75); color: #f0d8a0; border: 1px solid #6a4a22; }
+.app[data-theme="detective"] .wall-label { font-family: var(--font-display); background: rgba(26, 14, 6, 0.7); color: #eadcc0; }
+.app[data-theme="detective"] .slot-label { fill: #f0e0bc; font-family: var(--font-display); }
+.app[data-theme="detective"] .toast { background: rgba(26, 14, 6, 0.92); border-color: #6a4a22; color: #f0e0bc; font-family: "Nanum Gothic Coding", monospace; }
+.app[data-theme="detective"] .unlock-msg { font-family: var(--font-display); color: #ffe6b0; }
+
+.app[data-theme="detective"][data-screen="escape"] .bag,
+.app[data-theme="detective"][data-screen="escape"] .notebook,
+.app[data-theme="detective"][data-screen="escape"] .tutorial,
+.app[data-theme="detective"][data-screen="escape"] .reveal-box,
+.app[data-theme="detective"][data-screen="escape"] .empty-msg { background: #1f150c; border: 1px solid #5a4020; box-shadow: inset 0 0 14px #000; }
+.app[data-theme="detective"][data-screen="escape"] .bag h3,
+.app[data-theme="detective"][data-screen="escape"] .notebook h3 { font-family: var(--font-display); font-weight: 400; color: #f0e0bc; }
+.app[data-theme="detective"][data-screen="escape"] .bag button { background: #2e2012; border-color: #6a4a22; }
+.app[data-theme="detective"][data-screen="escape"] .bag button.selected { border-color: #ffd98a; }
+/* 수첩 버튼: 사건 파일 탭 */
+.app[data-theme="detective"][data-screen="escape"] .notebook button { font-family: "Nanum Gothic Coding", monospace; background: #d4b878; color: #3a2a12; border-radius: 2px 10px 0 0; border-bottom: 3px solid #8a6a32; }
+.app[data-theme="detective"][data-screen="escape"] .btn.primary { background: #7a4a1a; border-color: #a8742e; }
+.app[data-theme="detective"][data-screen="escape"] .btn { border-color: #5a4020; }
+
+/* ── 단서 카드: 사건 파일, 도장 찍힌 기밀 문서, 찢어진 신문 ── */
+.app[data-theme="detective"] .clue-card { position: relative; font-family: "Nanum Gothic Coding", monospace; font-size: 0.98rem; line-height: 1.6; color: #2a1c0c; background: #ead9b0; background-image: repeating-linear-gradient(0deg, rgba(120, 80, 30, 0.07) 0 1px, transparent 1px 24px); border-radius: 2px; box-shadow: 0 8px 24px #000c; padding: 24px 20px 18px; }
+.app[data-theme="detective"] .clue-card h3 { font-family: var(--font-display); font-weight: 400; font-size: 1.25rem; letter-spacing: 1px; border-bottom: 1px solid #8a6a32; padding-bottom: 4px; }
+/* 사건 파일 탭 */
+.app[data-theme="detective"] .clue-card::before { content: "CASE FILE"; position: absolute; top: -14px; left: 14px; padding: 2px 12px 0; height: 14px; line-height: 14px; font: 10px/14px "Special Elite", monospace; letter-spacing: 2px; color: #3a2a12; background: #d4b878; border-radius: 6px 6px 0 0; }
+.app[data-theme="detective"] .clue-note { background-color: #e8d8ae; border-top: 12px solid #d4b878; }
+.app[data-theme="detective"] .clue-diary { background-color: #dcc896; font-family: "Nanum Pen Script", cursive; font-size: 1.35rem; font-style: normal; border-left: 0; box-shadow: 0 8px 24px #000c, inset 14px 0 12px -10px rgba(60, 40, 10, 0.5); }
+/* 기밀 문서: 붉은 도장과 검은 줄 */
+.app[data-theme="detective"] .clue-document { background-color: #f1ecdc; border: 1px solid #9a8a62; }
+.app[data-theme="detective"] .clue-document::before { content: "TOP SECRET"; top: auto; bottom: 14px; left: auto; right: 16px; height: auto; padding: 4px 10px; font: 700 1rem "Special Elite", monospace; letter-spacing: 3px; color: #b3201a; background: transparent; border: 3px double #b3201a; border-radius: 4px; transform: rotate(-9deg); opacity: 0.78; }
+.app[data-theme="detective"] .clue-document h3::after { content: " [기밀]"; color: #b3201a; font-size: 0.8rem; }
+.app[data-theme="detective"] .clue-document p:last-of-type { background: linear-gradient(90deg, transparent 0 40%, #111 40% 78%, transparent 78%); background-size: 100% 1.1em; background-repeat: no-repeat; background-position: 0 55%; }
+/* 찢어진 신문 기사 */
+.app[data-theme="detective"] .clue-recording { background-color: #cfc8b0; color: #2a2418; font-family: "Special Elite", monospace; clip-path: polygon(0 3%, 6% 0, 14% 2%, 26% 0, 40% 2%, 55% 0, 70% 2%, 84% 0, 100% 2%, 99% 40%, 100% 70%, 97% 100%, 75% 98%, 50% 100%, 28% 98%, 8% 100%, 0 97%, 1% 60%, 0 30%); box-shadow: none; }
+.app[data-theme="detective"] .clue-recording::before { content: "THE DAILY NIGHT — 속보"; top: 4px; left: 14px; background: transparent; font: 10px "Special Elite", monospace; color: #6a5a3a; }
+.app[data-theme="detective"] .clue-recording p::before { content: "▎"; color: #2a2418; }
+.app[data-theme="detective"] .clue-sms, .app[data-theme="detective"] .clue-chat { background: #1a1d22; color: #eee; font-family: system-ui, sans-serif; border: 3px solid #3a3d44; border-radius: 18px; }
+.app[data-theme="detective"] .clue-sms::before, .app[data-theme="detective"] .clue-chat::before { content: "익명"; background: transparent; color: #8a8f99; font: 11px system-ui, sans-serif; }
+.app[data-theme="detective"] .bubble { background: #2e6a4a; }
+
+/* 자물쇠: 황동 금고 다이얼 */
+.app[data-theme="detective"] .lockpanel { background: #1a110a; border-color: #5a4020; box-shadow: inset 0 0 20px #000; }
+.app[data-theme="detective"] .lockpanel h3 { font-family: var(--font-display); font-weight: 400; color: #f0e0bc; letter-spacing: 1px; }
+.app[data-theme="detective"] .padlock-body { background: linear-gradient(#3e4a42, #1e2822); border: 3px solid #a8864a; box-shadow: inset 0 0 12px #000, 0 0 0 2px #2a1a0a; }
+.app[data-theme="detective"] .shackle { border-color: #c4a468; }
+.app[data-theme="detective"] .wheel { background: #0e100e; color: #ffe0a0; border: 1px solid #a8864a; }
+.app[data-theme="detective"] .wheel-btn { background: #6a4a22; color: #ffe0a0; }
+.app[data-theme="detective"] .keypad, .app[data-theme="detective"] .dirlock { background: #2a2018; border-color: #a8864a; }
+.app[data-theme="detective"] .keypad-display { background: #0e1a10; color: #ffcf6a; text-shadow: 0 0 6px #ffa83a66; }
+.app[data-theme="detective"] .key { background: #3a2c1e; border-color: #8a6a3a; color: #f0e0bc; font-family: var(--font-display); }
