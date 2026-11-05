@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import type { GameData, GameResult, ThemeId } from "@/lib/types";
-import { sampleGame } from "@/lib/sample";
+import { useEffect, useRef, useState } from "react";
+import type { GameData, GameResult, Progress, Room } from "@/lib/types";
+import { clearSnapshot, loadSnapshot, saveSnapshot, type Snapshot } from "@/lib/save";
 import StartScreen from "@/components/StartScreen";
 import EscapeScreen from "@/components/EscapeScreen";
 import ResultScreen from "@/components/ResultScreen";
@@ -14,17 +14,69 @@ export default function Home() {
   const [screen, setScreen] = useState<Screen>("start");
   const [game, setGame] = useState<GameData | null>(null);
   const [result, setResult] = useState<GameResult | null>(null);
-  const [surprise, setSurprise] = useState(true);
-  const [attempt, setAttempt] = useState(0); // 다시 도전할 때 EscapeScreen을 새로 시작하기 위한 값
+  const [initialProgress, setInitialProgress] = useState<Progress | null>(null);
+  const [attempt, setAttempt] = useState(0); // 바뀌면 방탈출 화면을 새로 시작한다
+  const [saved, setSaved] = useState<Snapshot | null>(null);
 
-  // 1단계: AI 없이 예시 데이터로 게임을 만든다. (4단계에서 AI 호출로 교체)
-  function enter(opts: { subject: string; theme: ThemeId; surprise: boolean }) {
-    const data = sampleGame(opts.theme);
-    if (opts.subject.trim()) data.subject = opts.subject.trim();
-    setGame(data);
-    setSurprise(opts.surprise);
+  // 저장할 최신 상태. 방이 만들어지거나 진행이 바뀔 때마다 브라우저(localStorage)에 저장한다.
+  const snap = useRef<Snapshot | null>(null);
+
+  useEffect(() => {
+    setSaved(loadSnapshot());
+  }, []);
+
+  function persist(patch: Partial<Snapshot>) {
+    if (!snap.current) return;
+    snap.current = { ...snap.current, ...patch };
+    saveSnapshot(snap.current);
+  }
+
+  function onGameReady(g: GameData) {
+    snap.current = { screen: "escape", game: g, result: null, progress: null };
+    saveSnapshot(snap.current);
+    setGame(g);
+    setResult(null);
+    setInitialProgress(null);
     setAttempt((a) => a + 1);
     setScreen("escape");
+  }
+
+  function onResume() {
+    if (!saved) return;
+    snap.current = saved;
+    setGame(saved.game);
+    setResult(saved.result);
+    setInitialProgress(saved.progress);
+    setAttempt((a) => a + 1);
+    setScreen(saved.screen);
+  }
+
+  // 방이 하나 더 만들어졌을 때 (플레이하는 동안 다음 방을 미리 만든다)
+  function onRoomReady(index: number, room: Room) {
+    const cur = snap.current?.game;
+    if (!cur || cur.rooms[index]) return;
+    const rooms = [...cur.rooms];
+    rooms[index] = room;
+    const g = { ...cur, rooms };
+    persist({ game: g });
+    setGame(g);
+  }
+
+  function retry() {
+    persist({ screen: "escape", result: null, progress: null });
+    setResult(null);
+    setInitialProgress(null);
+    setAttempt((a) => a + 1); // 이미 만든 방을 그대로 다시 쓴다 (AI 다시 호출 안 함)
+    setScreen("escape");
+  }
+
+  function backToStart() {
+    clearSnapshot();
+    snap.current = null;
+    setSaved(null);
+    setGame(null);
+    setResult(null);
+    setScreen("start");
   }
 
   const theme = game?.theme ?? "horror";
@@ -34,12 +86,16 @@ export default function Home() {
     <main className="app" data-theme={theme} data-mode={mode}>
       <div className="bg" aria-hidden="true" />
       <div className="content">
-        {screen === "start" && <StartScreen onEnter={enter} />}
+        {screen === "start" && <StartScreen saved={saved} onResume={onResume} onGameReady={onGameReady} />}
         {screen === "escape" && game && (
           <EscapeScreen
             key={attempt}
             game={game}
+            initialProgress={initialProgress}
+            onProgress={(p) => persist({ progress: p })}
+            onRoomReady={onRoomReady}
             onFinish={(r) => {
+              persist({ screen: "result", result: r, progress: null });
               setResult(r);
               setScreen("result");
             }}
@@ -47,19 +103,16 @@ export default function Home() {
         )}
         {screen === "result" && game && result && (
           <ResultScreen
-            game={game}
             result={result}
-            surprise={surprise}
-            onRetry={() => {
-              setAttempt((a) => a + 1);
-              setScreen("escape");
+            surprise={game.surprise}
+            onRetry={retry}
+            onStudy={() => {
+              persist({ screen: "review" });
+              setScreen("review");
             }}
-            onStudy={() => setScreen("review")}
           />
         )}
-        {screen === "review" && game && (
-          <ReviewScreen game={game} onBack={() => setScreen("start")} />
-        )}
+        {screen === "review" && game && result && <ReviewScreen game={game} result={result} onBack={backToStart} />}
       </div>
     </main>
   );

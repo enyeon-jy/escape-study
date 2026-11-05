@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import type { ThemeId } from "@/lib/types";
+import type { Difficulty, GameData, GameMode, ThemeId } from "@/lib/types";
+import { DIFFICULTY, MATERIAL_MAX_CHARS, ROOMS } from "@/lib/config";
 import { SAMPLE_MATERIAL, SAMPLE_SUBJECT } from "@/lib/sample";
+import { createGame } from "@/lib/gameFactory";
+import type { Snapshot } from "@/lib/save";
 
 const THEMES: { id: ThemeId; name: string; desc: string }[] = [
   { id: "horror", name: "공포", desc: "폐교된 학교 실험실" },
@@ -10,36 +13,62 @@ const THEMES: { id: ThemeId; name: string; desc: string }[] = [
   { id: "detective", name: "추리", desc: "사건 현장 연구실" },
 ];
 
+const MODES: { id: GameMode; name: string; desc: string }[] = [
+  { id: "quick", name: "빠른 탈출", desc: `방 ${ROOMS.quickRooms}개` },
+  { id: "full", name: "전체 범위 탈출", desc: "자료 양에 맞춰 방 개수 자동" },
+];
+
 interface Props {
-  onEnter: (o: { subject: string; theme: ThemeId; surprise: boolean }) => void;
+  saved: Snapshot | null;
+  onResume: () => void;
+  onGameReady: (game: GameData) => void;
 }
 
-export default function StartScreen({ onEnter }: Props) {
+export default function StartScreen({ saved, onResume, onGameReady }: Props) {
   const [subject, setSubject] = useState("");
   const [material, setMaterial] = useState("");
   const [theme, setTheme] = useState<ThemeId>("horror");
+  const [difficulty, setDifficulty] = useState<Difficulty>("normal");
+  const [mode, setMode] = useState<GameMode>("quick");
   const [surprise, setSurprise] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function start(s: string) {
+  async function start() {
     setLoading(true);
-    // AI가 방을 만드는 동안의 로딩 연출 자리 (지금은 짧게 기다리기만 함)
-    setTimeout(() => onEnter({ subject: s, theme, surprise }), 1500);
+    setError(null);
+    try {
+      const game = await createGame({ subject, material, theme, difficulty, mode, surprise });
+      onGameReady(game);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "방을 만들지 못했어요. 잠시 후 다시 시도해 주세요.");
+      setLoading(false);
+    }
   }
 
   if (loading) {
     return (
       <section className="screen center">
-        <div className="loading-lock" aria-hidden="true">🔒</div>
+        <div className="loading-lock" aria-hidden="true">
+          🔒
+        </div>
         <p className="loading-text">방을 만드는 중… 문이 잠기는 소리가 들린다</p>
       </section>
     );
   }
 
+  const over = material.length > MATERIAL_MAX_CHARS;
+
   return (
     <section className="screen">
       <h1 className="title">시험범위에 갇혔다</h1>
       <p className="sub">강의자료를 넣으면, 그 내용이 단서가 되어 방에 숨는다.</p>
+
+      {saved && (
+        <button type="button" className="btn primary resume" onClick={onResume}>
+          ▶ 이어하기 ({saved.game.subject} · 방 {Math.min((saved.progress?.roomIdx ?? saved.game.roomCount - 1) + 1, saved.game.roomCount)} / {saved.game.roomCount})
+        </button>
+      )}
 
       <label className="field">
         <span>과목 이름</span>
@@ -52,23 +81,45 @@ export default function StartScreen({ onEnter }: Props) {
           rows={6}
           value={material}
           onChange={(e) => setMaterial(e.target.value)}
-          placeholder="강의자료 내용을 여기에 붙여넣으세요. (PDF 올리기는 나중에 추가돼요)"
+          placeholder="강의자료 PDF를 열어 Ctrl+A, Ctrl+C로 복사해서 붙여넣으세요"
         />
+        <small className={over ? "warn" : "tip"}>
+          {material.length.toLocaleString()} / {MATERIAL_MAX_CHARS.toLocaleString()}자
+          {over ? " · 넘는 부분은 잘라서 사용해요" : ""}
+        </small>
       </label>
 
       <div className="field">
         <span>테마</span>
         <div className="theme-cards">
           {THEMES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={`theme-card ${theme === t.id ? "selected" : ""}`}
-              onClick={() => setTheme(t.id)}
-              aria-pressed={theme === t.id}
-            >
+            <button key={t.id} type="button" className={`theme-card ${theme === t.id ? "selected" : ""}`} onClick={() => setTheme(t.id)} aria-pressed={theme === t.id}>
               <strong>{t.name}</strong>
               <small>{t.desc}</small>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="field">
+        <span>난이도</span>
+        <div className="theme-cards">
+          {(Object.keys(DIFFICULTY) as Difficulty[]).map((d) => (
+            <button key={d} type="button" className={`theme-card ${difficulty === d ? "selected" : ""}`} onClick={() => setDifficulty(d)} aria-pressed={difficulty === d}>
+              <strong>{DIFFICULTY[d].label}</strong>
+              <small>{DIFFICULTY[d].desc}</small>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="field">
+        <span>게임 길이</span>
+        <div className="theme-cards two">
+          {MODES.map((m) => (
+            <button key={m.id} type="button" className={`theme-card ${mode === m.id ? "selected" : ""}`} onClick={() => setMode(m.id)} aria-pressed={mode === m.id}>
+              <strong>{m.name}</strong>
+              <small>{m.desc}</small>
             </button>
           ))}
         </div>
@@ -78,6 +129,8 @@ export default function StartScreen({ onEnter }: Props) {
         <input type="checkbox" checked={surprise} onChange={(e) => setSurprise(e.target.checked)} />
         <span>놀람 주의: 실패하면 교수님이 나타납니다</span>
       </label>
+
+      {error && <p className="error">{error}</p>}
 
       <div className="actions">
         <button
@@ -90,12 +143,7 @@ export default function StartScreen({ onEnter }: Props) {
         >
           예시 자료로 해 보기
         </button>
-        <button
-          type="button"
-          className="btn primary"
-          disabled={!material.trim()}
-          onClick={() => start(subject)}
-        >
+        <button type="button" className="btn primary" disabled={!material.trim()} onClick={start}>
           입장하기
         </button>
       </div>

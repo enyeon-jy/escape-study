@@ -1,17 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import type { GameData } from "@/lib/types";
+import type { GameData, GameResult } from "@/lib/types";
 import { isCorrect } from "@/lib/answer";
 
 interface Props {
   game: GameData;
+  result: GameResult;
   onBack: () => void;
 }
 
-export default function ReviewScreen({ game, onBack }: Props) {
-  // 틀린 문제는 맞힐 때까지 다시 나오도록 큐 맨 뒤로 보낸다.
-  const [queue, setQueue] = useState(() => game.review.map((_, i) => i));
+export default function ReviewScreen({ game, result, onBack }: Props) {
+  // 이번 게임에서 다뤘던 개념만 다시 묻는다. 틀린 문제는 맞힐 때까지 큐 맨 뒤로 보내 다시 낸다.
+  const [items] = useState(() => {
+    const played = game.review.filter((r) => result.playedConceptIds.includes(r.conceptId));
+    return played.length ? played : game.review;
+  });
+  const [queue, setQueue] = useState(() => items.map((_, i) => i));
   const [input, setInput] = useState("");
   const [feedback, setFeedback] = useState<"none" | "right" | "wrong">("none");
 
@@ -28,7 +33,7 @@ export default function ReviewScreen({ game, onBack }: Props) {
     );
   }
 
-  const item = game.review[queue[0]];
+  const item = items[queue[0]];
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -48,13 +53,7 @@ export default function ReviewScreen({ game, onBack }: Props) {
       <h2 className="review-prompt">{item.prompt}</h2>
 
       <form onSubmit={submit} className="row">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="빈칸에 들어갈 말"
-          disabled={feedback !== "none"}
-          autoComplete="off"
-        />
+        <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="빈칸에 들어갈 말" disabled={feedback !== "none"} autoComplete="off" />
         <button className="btn primary" type="submit" disabled={feedback !== "none"}>
           확인
         </button>
