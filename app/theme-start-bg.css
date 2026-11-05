@@ -1,0 +1,24 @@
+/* 시작 화면 배경: 고른 테마의 분위기. public/backgrounds/ 에 공포.png · 이세계.png · 추리.png 를 넣으면 이미지가 쓰인다. */
+.app[data-screen="start"][data-theme="horror"] .bg {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(120, 10, 10, 0.4), transparent 60%),
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url("/backgrounds/%EA%B3%B5%ED%8F%AC.png") center / cover no-repeat,
+    radial-gradient(ellipse at top, #2a0a0a, #060808 72%);
+}
+.app[data-screen="start"][data-theme="detective"] .bg {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(210, 150, 70, 0.25), transparent 60%),
+    linear-gradient(rgba(20, 10, 4, 0.5), rgba(20, 10, 4, 0.5)),
+    url("/backgrounds/%EC%B6%94%EB%A6%AC.png") center / cover no-repeat,
+    radial-gradient(ellipse at top, #3a2616, #0d0805 72%);
+}
+.app[data-screen="start"][data-theme="isekai"] .bg {
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(106, 245, 216, 0.22), transparent 55%),
+    radial-gradient(ellipse at 85% 10%, rgba(154, 106, 255, 0.3), transparent 55%),
+    linear-gradient(rgba(5, 3, 20, 0.45), rgba(5, 3, 20, 0.45)),
+    url("/backgrounds/%EC%9D%B4%EC%84%B8%EA%B3%84.png") center / cover no-repeat,
+    linear-gradient(#0b0824, #1d1250);
+}
+.app[data-screen="start"] .bg { transition: background 0.5s; }

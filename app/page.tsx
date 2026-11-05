@@ -87,7 +87,7 @@ export default function Home() {
     <main className="app" data-theme={theme} data-mode={mode} data-screen={screen}>
       <div className="bg" aria-hidden="true" />
       <div className="content">
-        {screen === "start" && <StartScreen saved={saved} onResume={onResume} onGameReady={onGameReady} onThemeChange={setPreview} />}
+        {screen === "start" && <StartScreen saved={saved} onResume={onResume} onGameReady={onGameReady} onThemeChange={setPreview} initialTheme={preview} />}
         {screen === "escape" && game && (
           <EscapeScreen
             key={attempt}
