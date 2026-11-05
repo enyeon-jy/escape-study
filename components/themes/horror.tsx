@@ -1,5 +1,8 @@
 "use client";
 
+import SpaceLayer from "./space";
+import { HorrorBoard } from "./boards";
+import { WORLDS } from "@/lib/worlds";
 import { DoorSpot, Hotspot, type ShapeProps, type WallProps, type ZoomArtProps } from "./common";
 import { THEME_NAMES, spotLabel, viewLabel } from "@/lib/themes";
 
@@ -123,13 +126,14 @@ function HorrorBg({ wall }: { wall: string }) {
 }
 
 function Wall(p: WallProps) {
-  const { wall, views, inspected, doorOpened, onSpot, onZoom, onDoor } = p;
+  const { wall, space, views, inspected, doorOpened, onSpot, onZoom, onDoor } = p;
   const zoom = (v: (typeof views)[number]) => (views.includes(v) ? onZoom(v) : onSpot(`dead-${v}`));
   const done = (id: string) => inspected.includes(id);
 
   return (
     <svg className="wall-svg" viewBox="0 0 400 250" role="group" aria-label={wall}>
       <HorrorBg wall={wall} />
+      <SpaceLayer theme={T} space={space} wall={wall} />
 
       {wall === "left" && (
         <>
@@ -188,13 +192,8 @@ function Wall(p: WallProps) {
       {wall === "front" && (
         <>
           {/* 금 간 칠판 */}
-          <Hotspot label={spotLabel(T, "board")} done={done("board")} mark={[258, 48]} onPress={() => onSpot("board")}>
-            <rect x="40" y="48" width="210" height="95" rx="3" fill="#14282a" stroke="#4a3d32" strokeWidth="5" />
-            <path d="M58 76 H150 M58 96 H190 M58 116 H130" stroke="#cfe8dc" strokeWidth="2" strokeDasharray="7 4" opacity="0.4" />
-            <path d="M150 50 L158 82 L146 104 L160 140" stroke="#050c0d" strokeWidth="1.8" fill="none" />
-            <path d="M158 82 L186 90" stroke="#050c0d" strokeWidth="1.2" fill="none" />
-            <circle cx="214" cy="84" r="16" stroke="#cfe8dc" strokeWidth="1.6" fill="none" opacity="0.4" />
-            <rect x="196" y="132" width="38" height="6" fill="#bdb6a3" />
+          <Hotspot label={WORLDS[T].spaces[space].board} done={done("board")} mark={[258, 48]} onPress={() => onSpot("board")}>
+            <HorrorBoard space={space} />
           </Hotspot>
 
           {/* 출구 철문 + 비상 도어락 */}

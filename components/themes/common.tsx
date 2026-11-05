@@ -8,6 +8,7 @@ import type { SlotShape, ThemeId, ViewId } from "@/lib/types";
 export interface WallProps {
   theme: ThemeId;
   wall: WallId; // 이 벽
+  space: number; // 방의 공간 번호 (0~3, 방 순서대로 돌아감)
   views: ViewId[]; // 이 방에서 클로즈업할 수 있는 물건
   inspected: string[];
   doorOpened: boolean;

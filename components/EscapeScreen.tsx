@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Clue, GameData, GameResult, Item, Progress, Room, RoomView, ViewId } from "@/lib/types";
-import { DIFFICULTY, STORY_INTRO } from "@/lib/config";
+import { DIFFICULTY } from "@/lib/config";
 import { createRoom } from "@/lib/gameFactory";
 import { warmPython } from "@/lib/code/run";
 import { WALL_ORDER, type WallId } from "@/lib/scenes";
 import { THEME_NAMES, shapeLabel, spotLabel, wallLabel } from "@/lib/themes";
+import { WORLDS, spaceIndex } from "@/lib/worlds";
 import { ambience, isMuted, setMuted, setSoundTheme, sfx } from "@/lib/sound";
 import RoomScene from "./RoomScene";
 import ZoomView from "./ZoomView";
@@ -54,8 +55,8 @@ interface SpotInfo {
   lockedBy?: string;
 }
 
-function findSpot(room: Room, id: string, theme: ThemeId): SpotInfo | null {
-  if (id in room.wallSpots) return { label: spotLabel(theme, id), content: room.wallSpots[id] };
+function findSpot(room: Room, id: string, theme: ThemeId, space: number): SpotInfo | null {
+  if (id in room.wallSpots) return { label: id === "board" ? WORLDS[theme].spaces[space].board : spotLabel(theme, id), content: room.wallSpots[id] };
   for (const v of room.views) {
     const s = v.slots.find((x) => x.id === id);
     if (s) return { label: shapeLabel(theme, s.shape), content: s.content, lockedBy: s.lockedBy };
@@ -216,7 +217,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
 
   function pressSpot(id: string) {
     if (!room || opened || finished.current) return;
-    const info = findSpot(room, id, game.theme);
+    const info = findSpot(room, id, game.theme, room.space ?? spaceIndex(p.roomIdx));
     if (!info) {
       setToast("아무것도 없다.");
       return;
@@ -334,7 +335,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
     return (
       <section className="screen center intro">
         <h1 className="title">시험범위에 갇혔다</h1>
-        <p className="intro-story">{STORY_INTRO[game.theme]}</p>
+        <p className="intro-story">{WORLDS[game.theme].intro}</p>
         <p className="tip">방마다 제한 시간이 있어요. 지금부터 시간이 흘러요.</p>
         <button
           className="btn primary"
@@ -395,6 +396,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
           <>
             <RoomScene
               theme={game.theme}
+              space={room.space ?? spaceIndex(p.roomIdx)}
               wall={wall}
               views={room.views.map((v) => v.id)}
               inspected={p.inspected}

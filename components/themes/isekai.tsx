@@ -1,6 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
+import SpaceLayer from "./space";
+import { IsekaiBoard } from "./boards";
+import { WORLDS } from "@/lib/worlds";
 import { DoorSpot, Hotspot, type ShapeProps, type WallProps, type ZoomArtProps } from "./common";
 import { THEME_NAMES, spotLabel, viewLabel } from "@/lib/themes";
 
@@ -78,13 +81,14 @@ function IsekaiBg({ wall }: { wall: string }) {
 }
 
 function Wall(p: WallProps) {
-  const { wall, views, inspected, doorOpened, onSpot, onZoom, onDoor } = p;
+  const { wall, space, views, inspected, doorOpened, onSpot, onZoom, onDoor } = p;
   const zoom = (v: (typeof views)[number]) => (views.includes(v) ? onZoom(v) : onSpot(`dead-${v}`));
   const done = (id: string) => inspected.includes(id);
 
   return (
     <svg className="wall-svg" viewBox="0 0 400 250" role="group" aria-label={wall}>
       <IsekaiBg wall={wall} />
+      <SpaceLayer theme={T} space={space} wall={wall} />
 
       {wall === "left" && (
         <>
@@ -127,16 +131,8 @@ function Wall(p: WallProps) {
       {wall === "front" && (
         <>
           {/* 룬 석판 */}
-          <Hotspot label={spotLabel(T, "board")} done={done("board")} mark={[218, 50]} onPress={() => onSpot("board")}>
-            <Bob d={0.5}>
-              <polygon points="44,58 206,52 212,140 40,146" fill="#2f2a5a" stroke="#8a7ae0" strokeWidth="3" />
-              <polygon points="52,66 198,61 202,132 50,138" fill="#1d1a3e" />
-              {["ᚠ", "ᚢ", "ᚦ", "ᚨ", "ᚱ", "ᚲ", "ᚷ", "ᚹ"].map((r, i) => (
-                <text key={i} className="rune-glow" x={64 + (i % 4) * 36} y={92 + Math.floor(i / 4) * 32} fontSize="22" fill="#6af5d8" fontFamily="Noto Sans Runic, serif">
-                  {r}
-                </text>
-              ))}
-            </Bob>
+          <Hotspot label={WORLDS[T].spaces[space].board} done={done("board")} mark={[218, 50]} onPress={() => onSpot("board")}>
+            <IsekaiBoard space={space} />
           </Hotspot>
 
           {/* 공중에 뜬 계단 */}

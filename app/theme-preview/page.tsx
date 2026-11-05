@@ -33,10 +33,13 @@ const VIEWS: RoomView[] = (["shelf", "desk", "cabinet"] as const).map((id) => ({
 export default function ThemePreview() {
   const [theme, setTheme] = useState<ThemeId>("horror");
   const [showLock, setShowLock] = useState(true);
+  const [space, setSpace] = useState(0); // 공간 번호 (?space=0~3)
 
   useEffect(() => {
     const t = new URLSearchParams(window.location.search).get("theme");
     if (t === "horror" || t === "detective" || t === "isekai") setTheme(t);
+    const sp = Number(new URLSearchParams(window.location.search).get("space"));
+    if (sp >= 0 && sp <= 3) setSpace(sp);
   }, []);
 
   const noop = () => {};
@@ -58,9 +61,16 @@ export default function ThemePreview() {
 
           {WALL_ORDER.map((w) => (
             <div className="scene-wrap" key={w}>
-              <RoomScene theme={theme} wall={w} views={["shelf", "desk", "cabinet"]} inspected={["frame"]} doorOpened={false} onSpot={noop} onZoom={noop} onDoor={noop} />
+              <RoomScene theme={theme} space={space} wall={w} views={["shelf", "desk", "cabinet"]} inspected={["frame"]} doorOpened={false} onSpot={noop} onZoom={noop} onDoor={noop} />
               {theme === "isekai" && <Particles />}
               {w === "front" && <GhostLayer enabled={theme === "horror"} ratio={0} />}
+            </div>
+          ))}
+
+          {[0, 1, 2, 3].map((sp) => (
+            <div className="scene-wrap" key={`space-${sp}`}>
+              <RoomScene theme={theme} space={sp} wall="front" views={["shelf", "desk"]} inspected={[]} doorOpened={false} onSpot={noop} onZoom={noop} onDoor={noop} />
+              <span className="wall-label">공간 {sp + 1}</span>
             </div>
           ))}
 
@@ -71,7 +81,7 @@ export default function ThemePreview() {
           ))}
 
           <div className="scene-wrap" style={{ background: "#000", padding: 12 }}>
-            <RoomScene theme={theme} wall="front" views={["shelf"]} inspected={[]} doorOpened={true} onSpot={noop} onZoom={noop} onDoor={noop} />
+            <RoomScene theme={theme} space={space} wall="front" views={["shelf"]} inspected={[]} doorOpened={true} onSpot={noop} onZoom={noop} onDoor={noop} />
           </div>
 
           {CLUES.map((c) => (

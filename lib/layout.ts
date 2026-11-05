@@ -1,6 +1,7 @@
 import { DIFFICULTY } from "./config";
 import type { LockType } from "./lock";
 import { WALL_SPOT_IDS } from "./scenes";
+import { spaceIndex } from "./worlds";
 import type { Clue, ClueFormat, Content, Difficulty, Item, Room, RoomView, Slot, SlotShape, ViewId } from "./types";
 
 // 방의 "내용"(AI나 예시 데이터가 만든 것)을 받아서, 물건 배치(벽·클로즈업·열쇠·잠긴 칸)는 코드가 정한다.
@@ -139,6 +140,7 @@ export function layoutRoom(spec: RoomSpec, difficulty: Difficulty, index: number
     conceptIds: spec.conceptIds,
     professorLine: spec.professorLine,
     isFinal: index === roomCount - 1,
+    space: spaceIndex(index),
     ...(spec.codeLang ? { codeLang: spec.codeLang } : {}),
   };
 }

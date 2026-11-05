@@ -68,6 +68,7 @@ export interface Room {
   conceptIds: string[];
   professorLine: string; // 실패했을 때 교수님 대사
   isFinal: boolean; // 탈출구가 있는 마지막 방
+  space?: number; // 방의 공간 번호 (0~3). 테마마다 공간 4개가 방 순서대로 돌아간다 (lib/worlds.ts)
   codeLang?: "python" | "javascript"; // 코드 자물쇠 방이면 코드의 언어 (정답은 코드를 실제로 실행해서 정했다)
 }
 

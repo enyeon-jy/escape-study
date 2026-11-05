@@ -1,5 +1,8 @@
 "use client";
 
+import SpaceLayer from "./space";
+import { DetectiveBoard } from "./boards";
+import { WORLDS } from "@/lib/worlds";
 import { DoorSpot, Hotspot, type ShapeProps, type WallProps, type ZoomArtProps } from "./common";
 import { THEME_NAMES, spotLabel, viewLabel } from "@/lib/themes";
 
@@ -74,13 +77,14 @@ function DetBg({ wall }: { wall: string }) {
 }
 
 function Wall(p: WallProps) {
-  const { wall, views, inspected, doorOpened, onSpot, onZoom, onDoor } = p;
+  const { wall, space, views, inspected, doorOpened, onSpot, onZoom, onDoor } = p;
   const zoom = (v: (typeof views)[number]) => (views.includes(v) ? onZoom(v) : onSpot(`dead-${v}`));
   const done = (id: string) => inspected.includes(id);
 
   return (
     <svg className="wall-svg" viewBox="0 0 400 250" role="group" aria-label={wall}>
       <DetBg wall={wall} />
+      <SpaceLayer theme={T} space={space} wall={wall} />
 
       {wall === "left" && (
         <>
@@ -131,28 +135,8 @@ function Wall(p: WallProps) {
       {wall === "front" && (
         <>
           {/* 사건 보드: 코르크 판, 사진, 메모, 압정, 빨간 실 */}
-          <Hotspot label={spotLabel(T, "board")} done={done("board")} mark={[258, 48]} onPress={() => onSpot("board")}>
-            <rect x="34" y="44" width="216" height="110" rx="2" fill="#a67c4e" stroke="#4a2e18" strokeWidth="5" />
-            <rect x="40" y="50" width="204" height="98" fill="#b88c58" opacity="0.9" />
-            {[[56, 58, -4], [118, 56, 3], [188, 60, -2]].map(([x, y, r], i) => (
-              <g key={i} transform={`rotate(${r} ${x + 20} ${y + 24})`}>
-                <rect x={x} y={y} width="40" height="48" fill="#e8e0cc" stroke="#9a8a62" />
-                <rect x={x + 4} y={y + 4} width="32" height="30" fill={i === 1 ? "#4a4a44" : "#6a6a60"} />
-                <circle cx={x + 20} cy={y + 15} r="7" fill="#2a2a26" />
-                <path d={`M${x + 8} ${y + 34} q12 -14 24 0`} fill="#2a2a26" />
-                <path d={`M${x + 6} ${y + 40} H${x + 34}`} stroke="#6b5a3a" strokeWidth="1.3" />
-                <circle cx={x + 20} cy={y + 2} r="2.8" fill="#c8302a" />
-              </g>
-            ))}
-            <rect x="70" y="116" width="42" height="26" fill="#f0e08a" transform="rotate(3 90 128)" />
-            <rect x="150" y="112" width="44" height="30" fill="#f4f0e0" transform="rotate(-3 170 126)" />
-            <path d="M78 124 H104 M78 130 H98 M158 120 H188 M158 126 H184 M158 132 H176" stroke="#6b5a3a" strokeWidth="1.2" />
-            <path d="M76 58 L138 60 L208 62 L170 118 L90 120 L76 58" stroke="#c0221c" strokeWidth="1.6" fill="none" strokeLinejoin="round" />
-            <path d="M138 60 L90 120" stroke="#c0221c" strokeWidth="1.2" />
-            <circle cx="90" cy="118" r="2.8" fill="#c8302a" />
-            <circle cx="170" cy="116" r="2.8" fill="#c8302a" />
-            <rect x="214" y="70" width="26" height="36" fill="#e8e0cc" stroke="#9a8a62" transform="rotate(5 227 88)" />
-            <text x="222" y="92" fontSize="14" fill="#8a2a22" fontWeight="bold">?</text>
+          <Hotspot label={WORLDS[T].spaces[space].board} done={done("board")} mark={[258, 48]} onPress={() => onSpot("board")}>
+            <DetectiveBoard space={space} />
           </Hotspot>
 
           {/* 출구: 간유리 창이 달린 사무실 문 */}
