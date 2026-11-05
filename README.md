@@ -111,6 +111,7 @@ npm run dev      # http://localhost:3000
 - 교내 GPU 서버의 **JupyterLab**에서 **SDXL-Turbo**로 탈출 성공 화면에 쓰는 **"문틈으로 빛이 새는 문" 이미지**를 생성했다.
 - 방법: 코드로 문의 **밑그림**을 만들고, 프롬프트를 더해 **img2img**로 생성했다.
 - 생성한 파일을 내려받아 [`public/images/escape-door.png`](public/images/escape-door.png)로 넣었고, **모든 테마의 탈출 성공 화면**에서 어둡게 시작해 1~2초에 걸쳐 밝아지게 보여 준다. 이미지 뒤의 은은한 빛 색은 테마마다 다르다. 화면 하단에 "이미지: 틸론 GPU SDXL-Turbo로 생성"이라고 출처를 표시했다.
+- **생성 과정과 증빙 캡처(JupyterLab 파일 트리, 실제 서비스 화면): [docs/tilon-gpu.md](docs/tilon-gpu.md)**
 - 이미지 생성은 서버 GPU에서 미리 해 둔 것이고, 서비스가 실행 중에 GPU를 부르지는 않는다. 생성에 쓴 노트북·스크립트는 이 저장소에 포함하지 않았다. 테마별 배경 이미지를 같은 방식으로 넣을 수 있게 `public/backgrounds/`(공포.png, 이세계.png, 추리.png) 자리를 만들어 두었으나, 아직 파일은 없다.
 
 ## 7. 개발 과정과 기록
