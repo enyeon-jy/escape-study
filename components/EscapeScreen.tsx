@@ -19,7 +19,7 @@ interface Props {
   onFinish: (r: GameResult) => void;
 }
 
-type Modal = { type: "clue"; clue: Clue } | { type: "item"; item: Item } | { type: "lock" } | null;
+type Modal = { type: "clue"; clue: Clue } | { type: "item"; item: Item } | { type: "lock" } | { type: "reveal" } | null;
 
 function fmt(sec: number) {
   const m = Math.floor(sec / 60);
@@ -37,6 +37,7 @@ function freshProgress(game: GameData): Progress {
     unlocked: [],
     hintsShown: 0,
     hintsUsed: 0,
+    revealedRooms: [],
     wrongRooms: [],
     clearedSec: [],
   };
@@ -116,6 +117,8 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
       elapsedSec: cur.clearedSec.reduce((a, b) => a + b, 0) + (success ? lastSpent : cfg.roomSec),
       hintsUsed: cur.hintsUsed,
       wrongLocks: cur.wrongRooms,
+      revealedCount: cur.revealedRooms.length,
+      revealedConceptIds: Array.from(new Set(g.rooms.filter((x) => cur.revealedRooms.includes(x.id)).flatMap((x) => x.conceptIds))),
       roomsCleared: cur.clearedSec.length + (success ? 1 : 0),
       totalRooms: g.roomCount,
       playedConceptIds: Array.from(new Set(played)),
@@ -247,6 +250,18 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
   function showHint() {
     if (!room || p.hintsShown >= hintLimit || opened) return;
     update((prev) => ({ ...prev, hintsShown: prev.hintsShown + 1, hintsUsed: prev.hintsUsed + 1 }));
+  }
+
+  // 정답 보기: 그 방의 힌트를 다 쓴 뒤에만. 열람 기록을 남기고 정답과 이유를 보여 준다.
+  const canReveal = !!room && p.hintsShown >= hintLimit && !opened;
+
+  function openReveal() {
+    if (!room || !canReveal) return;
+    update((prev) => ({
+      ...prev,
+      revealedRooms: prev.revealedRooms.includes(room.id) ? prev.revealedRooms : [...prev.revealedRooms, room.id],
+    }));
+    setModal({ type: "reveal" });
   }
 
   function turn(d: number) {
@@ -410,6 +425,11 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
             <li key={i}>{h}</li>
           ))}
         </ul>
+        {canReveal && (
+          <button type="button" className="btn ghost reveal-btn" onClick={openReveal}>
+            📖 정답 보기 (결과에 기록돼요)
+          </button>
+        )}
       </div>
 
       <section className="notebook" aria-label="단서 수첩">
@@ -430,13 +450,25 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
       </section>
 
       {modal && (
-        <div className="modal" role="dialog" aria-modal="true" onClick={() => modal.type !== "lock" && setModal(null)}>
+        <div className="modal" role="dialog" aria-modal="true" onClick={() => modal.type !== "lock" && modal.type !== "reveal" && setModal(null)}>
           <div className="modal-body" onClick={(e) => e.stopPropagation()}>
             {modal.type === "clue" && <ClueCard clue={modal.clue} />}
             {modal.type === "item" && (
               <p className="empty-msg">
                 {modal.item.icon} <strong>{modal.item.name}</strong>을(를) 찾았다! 가방에 넣었다.
               </p>
+            )}
+            {modal.type === "reveal" && (
+              <div className="reveal-box">
+                <p className="tip">정답과 이유를 확인하고 이해한 뒤 넘어가요.</p>
+                <p className="reveal-answer">
+                  정답: <strong>{room.lock.type === "direction" ? room.lock.answer.toUpperCase().split("").map((c) => ({ U: "↑", D: "↓", L: "←", R: "→" }[c] ?? c)).join(" ") : room.lock.answer}</strong>
+                </p>
+                <p className="reveal-why">{room.lock.explanation}</p>
+                <button type="button" className="btn primary" onClick={solved}>
+                  문을 열고 나간다
+                </button>
+              </div>
             )}
             {modal.type === "lock" && <LockPanel lock={room.lock} onSolved={solved} onWrong={wrong} onClose={() => setModal(null)} />}
             {modal.type !== "lock" && (

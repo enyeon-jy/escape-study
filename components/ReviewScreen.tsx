@@ -14,7 +14,11 @@ export default function ReviewScreen({ game, result, onBack }: Props) {
   // 이번 게임에서 다뤘던 개념만 다시 묻는다. 틀린 문제는 맞힐 때까지 큐 맨 뒤로 보내 다시 낸다.
   const [items] = useState(() => {
     const played = game.review.filter((r) => result.playedConceptIds.includes(r.conceptId));
-    return played.length ? played : game.review;
+    const list = played.length ? played : game.review;
+    // 정답을 열람한 개념은 복습에서 맨 먼저 (나머지 순서는 그대로)
+    const first = list.filter((r) => result.revealedConceptIds.includes(r.conceptId));
+    const rest = list.filter((r) => !result.revealedConceptIds.includes(r.conceptId));
+    return [...first, ...rest];
   });
   const [queue, setQueue] = useState(() => items.map((_, i) => i));
   const [input, setInput] = useState("");

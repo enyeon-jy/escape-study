@@ -40,6 +40,10 @@ export default function ResultScreen({ result, onRetry, onStudy }: Props) {
           <dd>{result.hintsUsed}회</dd>
         </div>
         <div>
+          <dt>정답 열람</dt>
+          <dd>{result.revealedCount}회</dd>
+        </div>
+        <div>
           <dt>틀렸던 자물쇠</dt>
           <dd>{result.wrongLocks.length ? result.wrongLocks.join(", ") : "없음"}</dd>
         </div>

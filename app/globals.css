@@ -190,3 +190,9 @@ input, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px so
 .app[data-mode="game"][data-theme="horror"] .bg { background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url("/backgrounds/%EA%B3%B5%ED%8F%AC.png") center / cover no-repeat, radial-gradient(ellipse at top, #2a0a0a, #0b0b0d 70%); }
 .app[data-mode="game"][data-theme="isekai"] .bg { background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url("/backgrounds/%EC%9D%B4%EC%84%B8%EA%B3%84.png") center / cover no-repeat, radial-gradient(ellipse at top, #1d1240, #0b0b14 70%); }
 .app[data-mode="game"][data-theme="detective"] .bg { background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url("/backgrounds/%EC%B6%94%EB%A6%AC.png") center / cover no-repeat, radial-gradient(ellipse at top, #2b2b2b, #0b0b0d 70%); }
+
+/* 정답 보기 */
+.reveal-btn { margin-top: 8px; }
+.reveal-box { background: #17171b; border: 1px solid #333; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.reveal-answer { font-size: 1.3rem; margin: 0; }
+.reveal-why { margin: 0; line-height: 1.6; }
