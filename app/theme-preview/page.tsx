@@ -6,6 +6,7 @@ import LockPanel from "@/components/LockPanel";
 import RoomScene from "@/components/RoomScene";
 import ZoomView from "@/components/ZoomView";
 import GhostLayer from "@/components/GhostLayer";
+import Particles from "@/components/Particles";
 import { WALL_ORDER } from "@/lib/scenes";
 import { THEME_TAGLINE } from "@/lib/themes";
 import type { Clue, RoomView, ThemeId } from "@/lib/types";
@@ -57,6 +58,7 @@ export default function ThemePreview() {
           {WALL_ORDER.map((w) => (
             <div className="scene-wrap" key={w}>
               <RoomScene theme={theme} wall={w} views={["shelf", "desk", "cabinet"]} inspected={["frame"]} doorOpened={false} onSpot={noop} onZoom={noop} onDoor={noop} />
+              {theme === "isekai" && <Particles />}
               {w === "front" && <GhostLayer enabled={theme === "horror"} ratio={0} />}
             </div>
           ))}

@@ -12,6 +12,7 @@ import ZoomView from "./ZoomView";
 import ClueCard from "./ClueCard";
 import LockPanel from "./LockPanel";
 import GhostLayer from "./GhostLayer";
+import Particles from "./Particles";
 import type { ThemeId } from "@/lib/types";
 
 interface Props {
@@ -393,6 +394,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
         )}
         {opened && <div className="unlock-msg">{THEME_NAMES[game.theme].openMsg} {room.isFinal ? "탈출구가 열렸다!" : "다음 방으로…"}</div>}
         {toast && <div className="toast">{toast}</div>}
+        {game.theme === "isekai" && <Particles />}
         <GhostLayer enabled={game.theme === "horror" && game.surprise && !intro} ratio={p.remaining / cfg.roomSec} />
       </div>
 

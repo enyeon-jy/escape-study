@@ -1,0 +1,102 @@
+/* ── 이세계: 현실에 없는 공간 ─────────────────────────────────────
+   보라·청록 오로라, 떠다니는 돌 조각과 입자, 고대 문서 글꼴, 룬 마법 다이얼. 빛은 천천히 번지기만 한다. */
+@keyframes float-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(calc(var(--amp, 4px) * -1)); } }
+.float-bob { animation: float-bob 6s ease-in-out infinite; }
+@keyframes aurora-drift { 0%, 100% { transform: translateX(-14px); } 50% { transform: translateX(14px); } }
+.aurora { animation: aurora-drift 16s ease-in-out infinite; }
+.aurora-b { animation-duration: 22s; animation-direction: reverse; }
+.twinkle { animation: soft-pulse 5s ease-in-out infinite; }
+@keyframes wf { to { stroke-dashoffset: 36; } }
+.waterfall-flow { stroke-dasharray: 8 10; animation: wf 2.4s linear infinite; }
+.wf-b { stroke-dasharray: 3 14; animation-duration: 1.7s; }
+.rune-glow { animation: soft-pulse 4.5s ease-in-out infinite; }
+@keyframes spin-rev { to { transform: rotate(-360deg); } }
+.clock-rev { animation: spin-rev 10s linear infinite; }
+.clock-rev.slow { animation-duration: 90s; }
+.rune-spin { transform-box: fill-box; transform-origin: center; animation: spin-rev 40s linear infinite; }
+
+.particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+.particle { position: absolute; bottom: -8px; border-radius: 50%; opacity: 0; animation: rise 14s linear infinite; }
+@keyframes rise { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 0.85; } 85% { opacity: 0.6; } 100% { transform: translate(14px, -280px); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .float-bob, .aurora, .waterfall-flow, .clock-rev, .rune-spin, .twinkle, .rune-glow, .rune-ring { animation: none !important; }
+}
+
+.app[data-theme="isekai"][data-screen="escape"] { --font-display: "Song Myung", "Noto Sans Runic", serif; --accent: #6af5d8; color: #e8e2ff; }
+.app[data-theme="isekai"][data-screen="escape"] .bg {
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(106, 245, 216, 0.2), transparent 55%),
+    radial-gradient(ellipse at 85% 10%, rgba(154, 106, 255, 0.28), transparent 55%),
+    linear-gradient(rgba(5, 3, 20, 0.45), rgba(5, 3, 20, 0.45)),
+    url("/backgrounds/%EC%9D%B4%EC%84%B8%EA%B3%84.png") center / cover no-repeat,
+    linear-gradient(#0b0824, #1d1250);
+}
+.app[data-theme="isekai"][data-screen="escape"] .room-name { font-family: var(--font-display); font-weight: 400; font-size: 1.8rem; color: #e8fff8; text-shadow: 0 0 12px #6af5d8aa; }
+.app[data-theme="isekai"][data-screen="escape"] .story { font-family: var(--font-display); color: #c8b0ff; }
+.app[data-theme="isekai"][data-screen="escape"] .situation { color: #d0cae8; }
+.app[data-theme="isekai"][data-screen="escape"] .intro-story { font-family: var(--font-display); font-size: 1.25rem; line-height: 1.9; color: #e8e2ff; }
+.app[data-theme="isekai"][data-screen="escape"] .title { font-family: var(--font-display); font-weight: 400; color: #e8fff8; text-shadow: 0 0 16px #6af5d8aa; }
+.app[data-theme="isekai"][data-screen="escape"] .title.lose { color: #ff9ac8; }
+
+/* 타이머: 룬처럼 빛나는 청록 숫자 */
+.app[data-theme="isekai"][data-screen="escape"] .timer { background: #0b0824; border: 2px solid #6a5ca8; color: #8af5ff; text-shadow: 0 0 10px #6af5d8aa; box-shadow: inset 0 0 12px #000, 0 0 14px #6a5ca877; border-radius: 14px; }
+
+.app[data-theme="isekai"] .scene-wrap { border: 2px solid #6a5ca8; border-radius: 14px; box-shadow: 0 0 28px #6a5ca877, 0 0 60px #6af5d822; }
+.app[data-theme="isekai"] .hotspot:hover > *:not(.check):not(title),
+.app[data-theme="isekai"] .hotspot:focus-visible > *:not(.check):not(title) { filter: brightness(1.4) drop-shadow(0 0 6px #6af5d8); }
+.app[data-theme="isekai"] .turn-btn, .app[data-theme="isekai"] .back-btn { background: rgba(20, 12, 60, 0.7); color: #c8fff2; border: 1px solid #6a5ca8; }
+.app[data-theme="isekai"] .wall-label { font-family: var(--font-display); background: rgba(20, 12, 60, 0.7); color: #e8e2ff; }
+.app[data-theme="isekai"] .slot-label { fill: #e8e2ff; font-family: var(--font-display); }
+.app[data-theme="isekai"] .toast { background: rgba(14, 8, 44, 0.92); border-color: #6a5ca8; color: #e8e2ff; font-family: var(--font-display); }
+.app[data-theme="isekai"] .unlock-msg { font-family: var(--font-display); font-size: 1.6rem; color: #e8fff8; text-shadow: 0 0 12px #6af5d8; }
+.app[data-theme="isekai"] .exit-light { transition: opacity 2s ease-in; }
+.app[data-theme="isekai"] .door-spot .door-panel { transform-box: fill-box; transform-origin: center; transition: transform 1.6s ease-out, opacity 1.6s ease-out; }
+.app[data-theme="isekai"] .door-spot.opened .door-panel { transform: scale(1.35); opacity: 0; }
+
+.app[data-theme="isekai"][data-screen="escape"] .bag,
+.app[data-theme="isekai"][data-screen="escape"] .notebook,
+.app[data-theme="isekai"][data-screen="escape"] .tutorial,
+.app[data-theme="isekai"][data-screen="escape"] .reveal-box,
+.app[data-theme="isekai"][data-screen="escape"] .empty-msg { background: rgba(20, 12, 60, 0.75); border: 1px solid #6a5ca8; border-radius: 14px; box-shadow: inset 0 0 18px #2a1a6a, 0 0 14px #6a5ca844; }
+.app[data-theme="isekai"][data-screen="escape"] .bag h3,
+.app[data-theme="isekai"][data-screen="escape"] .notebook h3 { font-family: var(--font-display); font-weight: 400; color: #e8fff8; }
+.app[data-theme="isekai"][data-screen="escape"] .bag button { background: #2a1f66; border-color: #6a5ca8; border-radius: 12px; }
+.app[data-theme="isekai"][data-screen="escape"] .bag button.selected { border-color: #6af5d8; box-shadow: 0 0 10px #6af5d8aa; }
+.app[data-theme="isekai"][data-screen="escape"] .notebook button { font-family: var(--font-display); background: #e8d8a8; color: #3a2a5a; border-radius: 10px; box-shadow: 0 0 8px #c8a8ff66; }
+.app[data-theme="isekai"][data-screen="escape"] .btn.primary { background: #5a3ab8; border-color: #8a6aff; }
+.app[data-theme="isekai"][data-screen="escape"] .btn { border-color: #6a5ca8; border-radius: 12px; }
+
+/* ── 단서 카드: 룬 테두리가 있는 고대 양피지 ── */
+.app[data-theme="isekai"] .clue-card { position: relative; font-family: var(--font-display, "Song Myung", serif); font-size: 1.1rem; line-height: 1.7; color: #3a2a1a; background: #ecdcae; background-image: radial-gradient(circle at 20% 15%, rgba(150, 100, 40, 0.28), transparent 45%), radial-gradient(circle at 85% 90%, rgba(110, 70, 30, 0.32), transparent 45%); border-radius: 16px 6px 16px 6px; border: 3px double #8a6a32; box-shadow: 0 0 22px #9a6aff88, inset 0 0 28px rgba(110, 70, 30, 0.45); padding: 26px 22px 20px; }
+.app[data-theme="isekai"] .clue-card h3 { font-family: var(--font-display); font-weight: 400; font-size: 1.35rem; text-align: center; color: #4a1a8a; }
+.app[data-theme="isekai"] .clue-card h3::before, .app[data-theme="isekai"] .clue-card h3::after { content: " ᚠ ᚢ ᚦ "; font-family: "Noto Sans Runic", serif; font-size: 0.8rem; color: #8a6a32; }
+.app[data-theme="isekai"] .clue-card h3::after { content: " ᚨ ᚱ ᚲ "; }
+.app[data-theme="isekai"] .clue-diary { font-style: normal; border-left: 3px double #8a6a32; }
+.app[data-theme="isekai"] .clue-document { font-family: var(--font-display); border: 3px double #8a6a32; background-color: #e4d4a8; }
+.app[data-theme="isekai"] .clue-document h3::after { content: " ᚨ ᚱ ᚲ "; color: #8a6a32; font-size: 0.8rem; }
+.app[data-theme="isekai"] .clue-recording { background-color: #1d1a4a; background-image: radial-gradient(circle at 50% 0%, #4a3aa855, transparent 60%); color: #c8fff2; font-family: var(--font-display); border-color: #6a5ca8; box-shadow: 0 0 22px #6af5d855, inset 0 0 28px #0b0824; }
+.app[data-theme="isekai"] .clue-recording h3 { color: #8af5ff; }
+.app[data-theme="isekai"] .clue-recording p::before { content: "✦ "; color: #6af5d8; }
+.app[data-theme="isekai"] .clue-sms, .app[data-theme="isekai"] .clue-chat { background-color: #1d1a4a; background-image: none; color: #e8e2ff; border-color: #6a5ca8; font-family: var(--font-display); box-shadow: 0 0 22px #9a6aff66, inset 0 0 28px #0b0824; }
+.app[data-theme="isekai"] .clue-sms h3, .app[data-theme="isekai"] .clue-chat h3 { color: #8af5ff; }
+.app[data-theme="isekai"] .bubble { background: #3a2a8a; border: 1px solid #8a6aff; border-radius: 16px; }
+
+/* ── 자물쇠: 룬 문자가 새겨진 마법 다이얼. 열리면 빛이 천천히 퍼진다 ── */
+.app[data-theme="isekai"] .lockpanel { background: rgba(14, 8, 44, 0.9); border-color: #6a5ca8; border-radius: 18px; box-shadow: 0 0 26px #6a5ca877, inset 0 0 24px #2a1a6a; overflow: hidden; }
+.app[data-theme="isekai"] .lockpanel h3 { font-family: var(--font-display); font-weight: 400; color: #e8fff8; text-shadow: 0 0 10px #6af5d8aa; }
+.app[data-theme="isekai"] .padlock { position: relative; }
+.app[data-theme="isekai"] .rune-ring { display: block; position: absolute; left: 50%; top: 56%; width: 0; height: 0; pointer-events: none; }
+.app[data-theme="isekai"] .rune-ring span { position: absolute; left: -8px; top: -9px; width: 16px; text-align: center; font: 16px "Noto Sans Runic", serif; color: #6af5d8; text-shadow: 0 0 8px #6af5d8; opacity: 0.8; }
+.app[data-theme="isekai"] .rune-ring { animation: spin-slow 60s linear infinite; }
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.app[data-theme="isekai"] .padlock-body { background: radial-gradient(circle at 50% 30%, #4a3aa8, #1d1250); border: 2px solid #8a6aff; border-radius: 40px; box-shadow: inset 0 0 14px #000, 0 0 18px #9a6aff88; }
+.app[data-theme="isekai"] .shackle { border-color: #c8a8ff; box-shadow: 0 0 12px #9a6aff88; }
+.app[data-theme="isekai"] .wheel { background: #0b0824; color: #8af5ff; border: 1px solid #6af5d8; text-shadow: 0 0 8px #6af5d8; border-radius: 22px; }
+.app[data-theme="isekai"] .wheel-btn { background: #3a2a8a; color: #c8fff2; border-radius: 50%; }
+.app[data-theme="isekai"] .keypad, .app[data-theme="isekai"] .dirlock { background: #1d1250; border: 2px solid #8a6aff; border-radius: 20px; box-shadow: 0 0 18px #9a6aff66; }
+.app[data-theme="isekai"] .keypad-display { background: #0b0824; color: #8af5ff; text-shadow: 0 0 8px #6af5d8; }
+.app[data-theme="isekai"] .key { background: #2a1f66; border-color: #8a6aff; color: #e8fff8; border-radius: 50%; height: 56px; font-family: "Noto Sans Runic", var(--font-display), serif; }
+.app[data-theme="isekai"] .lock-burst { display: block; position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; pointer-events: none; opacity: 0; background: radial-gradient(circle, #e8fff8 0%, #6af5d8 30%, #9a6aff55 60%, transparent 72%); }
+.app[data-theme="isekai"] .lockpanel.ok .lock-burst { animation: burst 1.6s ease-out forwards; }
+@keyframes burst { 0% { opacity: 0; transform: scale(0.4); } 35% { opacity: 0.75; } 100% { opacity: 0; transform: scale(14); } }
