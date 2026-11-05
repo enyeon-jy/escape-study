@@ -1,4 +1,5 @@
 import { newId } from "./cloud";
+import { SAMPLE_ENDING, SAMPLE_STORY, type SampleRoomId } from "./sampleStory";
 import type { LockType } from "./lock";
 import { layoutRoom, type ClueSrc, type RoomSpec } from "./layout";
 import type { Concept, Difficulty, GameData, GameMode, ReviewItem, Room, ThemeId, ViewId } from "./types";
@@ -35,10 +36,7 @@ const CONCEPTS: Concept[] = [
 ];
 
 interface RoomTemplate {
-  id: string;
-  name: string;
-  situation: string;
-  story: string;
+  id: SampleRoomId; // 이름·상황·스토리·대사는 lib/sampleStory.ts (테마별)
   lockType: LockType;
   question: string;
   answer: string;
@@ -46,7 +44,6 @@ interface RoomTemplate {
   hints: string[]; // 난이도별 힌트 횟수만큼 앞에서부터 사용
   explanation: string;
   conceptId: string;
-  professorLine: string;
   views: ViewId[]; // 클로즈업 화면 (2~3개)
   lockedSlot?: string; // 열쇠로 여는 칸
   codeLang?: "python"; // 코드 자물쇠 방 (real 단서 첫 번째가 모니터에 뜨는 코드)
@@ -59,9 +56,6 @@ const CODE_CLUE: ClueSrc = { title: "컴퓨터 화면", format: "code", lines: S
 const TEMPLATES: RoomTemplate[] = [
   {
     id: "lab",
-    name: "폐교 과학실",
-    situation: "눈을 뜨니 불 꺼진 과학실이다. 앞 벽의 출구 문이 숫자 자물쇠로 잠겨 있다.",
-    story: "1 / 시험 전날 밤, 도서관에서 졸다 눈을 떴더니 시험범위 속 폐교에 갇혀 있다. 아침 9시 시험 전에 나가야 한다.",
     lockType: "dial-number",
     question: "출구 문의 숫자를 맞춰 보세요.",
     answer: "7",
@@ -73,7 +67,6 @@ const TEMPLATES: RoomTemplate[] = [
     ],
     explanation: "OSI 참조 모델은 통신 과정을 7개의 계층으로 나눈 모델이다. 단서가 가리킨 모델이 OSI이고, 문이 물은 것은 계층의 수라서 답은 7이다.",
     conceptId: "osi",
-    professorLine: "자네, 아직도 OSI 모델이 몇 계층인지 모르나?",
     views: ["shelf", "desk"],
     clues: {
       easy: {
@@ -106,9 +99,6 @@ const TEMPLATES: RoomTemplate[] = [
   },
   {
     id: "hall",
-    name: "어두운 복도",
-    situation: "과학실을 빠져나와 복도에 왔다. 앞 벽의 문에 알파벳 자물쇠가 달려 있다. 서랍 하나는 잠겨 있다.",
-    story: "2 / 복도 끝에서 알 수 없는 방송 소리가 새어 나온다. 저 문 너머가 출구에 가까워진다.",
     lockType: "dial-alpha",
     question: "문이 요구하는 영문 약자를 맞춰 보세요.",
     answer: "HTTPS",
@@ -120,7 +110,6 @@ const TEMPLATES: RoomTemplate[] = [
     ],
     explanation: "HTTP에 암호화를 더한 프로토콜이 HTTPS다. 주소창에 자물쇠가 뜨는 안전한 웹 통신이므로 답은 HTTPS이다.",
     conceptId: "https",
-    professorLine: "HTTPS가 무슨 뜻인지도 모르면서 탈출하겠다고?",
     views: ["shelf", "desk", "cabinet"],
     lockedSlot: "desk-0",
     clues: {
@@ -154,9 +143,6 @@ const TEMPLATES: RoomTemplate[] = [
   },
   {
     id: "server",
-    name: "서버실",
-    situation: "컴퓨터가 켜진 서버실이다. 모니터에 코드가 떠 있고, 앞 벽의 출구 문에 숫자 자물쇠가 달려 있다. 캐비닛의 상자가 잠겨 있다.",
-    story: "3 / 서버실 한쪽에서 모니터만 홀로 빛난다. 저 코드가 다음 문의 열쇠다.",
     lockType: "dial-number",
     question: "모니터의 코드를 실행하면 마지막에 출력되는 값을 맞춰 보세요.",
     answer: SAMPLE_CODE.answer,
@@ -164,7 +150,6 @@ const TEMPLATES: RoomTemplate[] = [
     hints: ["모니터의 코드를 맨 윗줄부터 한 줄씩 따라가 보자.", "range(1, 6)이 만드는 숫자들을 먼저 적어 봐.", "% 2 == 1 을 만족하는 숫자만 total에 더해져."],
     explanation: "range(1, 6)은 1, 2, 3, 4, 5를 만든다. 그중 2로 나눈 나머지가 1인 1, 3, 5만 total에 더해지므로 1 + 3 + 5 = 9가 출력된다.",
     conceptId: "pyloop",
-    professorLine: "자네, 반복문 하나 못 읽으면서 탈출하겠다고?",
     views: ["desk", "cabinet"],
     lockedSlot: "cabinet-0",
     codeLang: "python",
@@ -196,9 +181,6 @@ const TEMPLATES: RoomTemplate[] = [
   },
   {
     id: "studio",
-    name: "방송실",
-    situation: "마지막 방이다. 앞 벽의 출구 문에 키패드 도어락이 달려 있다. 캐비닛의 상자가 잠겨 있다.",
-    story: "4 / 마지막 방송실. 저 문만 열면 학교 밖이다. 아침 9시가 코앞이다!",
     lockType: "keypad",
     question: "도어락 번호를 눌러 보세요.",
     answer: "32",
@@ -210,7 +192,6 @@ const TEMPLATES: RoomTemplate[] = [
     ],
     explanation: "IPv4 주소는 8비트씩 4덩어리로 이루어져 있다. 8비트 × 4 = 32비트라서 답은 32이다.",
     conceptId: "ipv4",
-    professorLine: "IPv4 주소가 몇 비트인지도 모르나? 다시 공부해 오게!",
     views: ["desk", "cabinet"],
     lockedSlot: "cabinet-0",
     clues: {
@@ -288,14 +269,14 @@ const REVIEW: ReviewItem[] = [
 
 // 예시 방 템플릿을 방 내용(RoomSpec)으로 바꿔 코드가 물건 배치를 정하게 한다 (AI가 만든 방과 같은 경로)
 function buildRoom(theme: ThemeId, difficulty: Difficulty, index: number, roomCount: number): Room {
-  void theme;
   const tpl = TEMPLATES[index % TEMPLATES.length];
+  const story = SAMPLE_STORY[theme][tpl.id];
   const set = tpl.clues[difficulty];
   const spec: RoomSpec = {
     id: tpl.id + (index >= TEMPLATES.length ? `-${index}` : ""),
-    name: tpl.name,
-    situation: tpl.situation,
-    story: tpl.story,
+    name: story.name,
+    situation: story.situation,
+    story: story.story,
     lockType: tpl.lockType,
     question: tpl.question,
     answer: tpl.answer,
@@ -303,7 +284,9 @@ function buildRoom(theme: ThemeId, difficulty: Difficulty, index: number, roomCo
     hints: tpl.hints,
     explanation: tpl.explanation,
     conceptIds: [tpl.conceptId],
-    professorLine: tpl.professorLine,
+    professorLine: story.professorLine,
+    recap: story.recap,
+    ending: SAMPLE_ENDING[theme],
     real: set.real,
     fake: set.fake,
     views: tpl.views,
