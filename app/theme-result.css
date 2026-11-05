@@ -1,0 +1,19 @@
+/* ── 탈출 성공 화면: 문틈의 빛 이미지 (틸론 GPU SDXL-Turbo로 생성) ──
+   처음엔 어둡게 시작해 1.8초에 걸쳐 밝아지고, 이미지 뒤 은은한 빛이 테마 색으로 퍼진다.
+   움직임 줄이기를 켠 사람에게는 애니메이션 없이 바로 보인다. */
+.escape-hero { position: relative; margin: 4px auto 0; width: min(88vw, 380px); display: flex; justify-content: center; }
+.escape-hero img { position: relative; z-index: 1; display: block; width: 100%; height: auto; max-height: 62vh; object-fit: contain; border-radius: 10px; animation: door-brighten 1.8s ease-out both; }
+.escape-glow { position: absolute; inset: -14% -22%; z-index: 0; pointer-events: none; border-radius: 50%; background: radial-gradient(ellipse at 50% 50%, var(--glow-core) 0%, var(--glow-mid) 38%, transparent 70%); animation: door-glow 2.2s ease-out both; }
+
+.app[data-theme="horror"] { --glow-core: rgba(255, 244, 222, 0.55); --glow-mid: rgba(255, 236, 205, 0.2); }
+.app[data-theme="detective"] { --glow-core: rgba(255, 178, 64, 0.55); --glow-mid: rgba(255, 160, 40, 0.2); }
+.app[data-theme="isekai"] { --glow-core: rgba(126, 206, 255, 0.55); --glow-mid: rgba(100, 180, 255, 0.2); }
+
+@keyframes door-brighten { from { filter: brightness(0.06) saturate(0.6); } to { filter: brightness(1) saturate(1); } }
+@keyframes door-glow { 0% { opacity: 0; transform: scale(0.35); } 100% { opacity: 1; transform: scale(1); } }
+
+.image-credit { margin: 8px 0 0; text-align: center; font-size: 0.72rem; opacity: 0.55; }
+
+@media (prefers-reduced-motion: reduce) {
+  .escape-hero img, .escape-glow { animation: none; }
+}

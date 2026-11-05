@@ -18,6 +18,13 @@ export default function ResultScreen({ theme, result, onRetry, onStudy }: Props)
 
   return (
     <section className="screen">
+      {result.success && (
+        <figure className="escape-hero">
+          <div className="escape-glow" aria-hidden="true" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/escape-door.png" alt="문틈으로 빛이 새어 들어오는 열린 문" width={748} height={756} />
+        </figure>
+      )}
       <h1 className={`title ${result.success ? "win" : "lose"}`}>{result.success ? "탈출 성공!" : "탈출 실패…"}</h1>
 
       {result.success && result.ending && (
@@ -82,6 +89,7 @@ export default function ResultScreen({ theme, result, onRetry, onStudy }: Props)
           이제 진짜 공부하기
         </button>
       </div>
+      {result.success && <p className="image-credit">이미지: 틸론 GPU SDXL-Turbo로 생성</p>}
     </section>
   );
 }
