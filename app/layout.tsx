@@ -9,6 +9,7 @@ import "./theme-code.css";
 import "./theme-start.css";
 import "./theme-start-bg.css";
 import "./theme-space.css";
+import "./theme-story.css";
 
 // 테마마다 다른 무료 웹폰트(Google Fonts): 공포=긁힌 붓글씨, 추리=타자기, 이세계=고대 문서·룬 문자
 const FONTS =

@@ -1,5 +1,6 @@
 import type { CodeLang } from "../code/safe";
 import { DIFFICULTY } from "../config";
+import { worldBlock } from "./worldPrompt";
 import type { Concept, Difficulty, ThemeId } from "../types";
 
 // 프로그래밍 과목의 "코드 자물쇠" 방 지시문 (서버에서만 사용). 규칙은 SYSTEM_PROMPT와 함께 적용된다.
@@ -36,8 +37,8 @@ export function codeRoomPrompt(a: {
 [강의자료]
 ${a.material}
 
-[테마] ${THEME_STYLE[a.theme]}
-[세계관] 시험 전날 밤 도서관에서 잠들었다 깨어 보니 시험범위 속에 갇혔다. 아침 9시 시험 전에 탈출해야 한다. (테마에 맞게 말투만 바꾼다)
+[테마 분위기] ${THEME_STYLE[a.theme]}
+${worldBlock({ theme: a.theme, index: a.index, roomCount: a.roomCount })}
 
 [이 방] ${a.index + 1}번째 방 / 전체 ${a.roomCount}개${isFinal ? " (최종 방)" : ""}. 이 방은 "코드 자물쇠 방"이다.
 ${prev}[이 방에서 다룰 개념]
@@ -56,8 +57,8 @@ ${a.roomConcepts.map((c) => `- (${c.id}) ${c.name}`).join("\n")}
 - 단서 형식(format)은 note, diary, chat, document, sms, recording 중에서 고른다 (code는 쓰지 않는다).
 - 힌트(hints)는 ${Math.max(cfg.hintsPerRoom, 1)}개 이상, 뒤로 갈수록 구체적으로. 정답 값은 직접 말하지 않는다 (예: "반복문이 몇 번 도는지 세어 봐").
 - explanation: 코드를 한 줄씩 따라가며 왜 그 값이 나오는지 1~2문장.
-- professorLine: 실패했을 때 나오는 한 줄 대사. 이 방의 개념과 연결한다.
-- 간결하게 쓴다: 단서 하나는 1~3줄, 한 줄은 50자 이내, 힌트 하나는 60자 이내, situation 80자 이내, story 80자 이내.
+- (professorLine, recap, ending은 위 [스토리 규칙]을 따른다. 코드는 이 공간의 장치로 표현한다. 예: 모니터에 뜬 코드 = 세계관 인물이 남긴 프로그램·주문·암호.)
+- 간결하게 쓴다: 단서 하나는 1~3줄, 한 줄은 50자 이내, 힌트 하나는 60자 이내, situation 120자 이내, story 80자 이내.
 - sourceQuotes: 코드에 쓴 문법·개념의 근거가 되는 강의자료 문장을 **글자 그대로** 베낀 조각 1~3개(각 10~80자).
 
 [출력 JSON 형식]
@@ -73,7 +74,8 @@ ${a.roomConcepts.map((c) => `- (${c.id}) ${c.name}`).join("\n")}
     "explanation": "왜 그 값이 나오는지 설명",
     "sourceQuotes": ["강의자료에서 글자 그대로 베낀 근거 조각"]
   },
-  "professorLine": "탈출 실패 시 대사",
+  "professorLine": "탈출 실패 시 세계관 인물의 대사",
+  "recap": "탈출 직후 보이는 개념 정리 한 줄 (머리말 포함)",${isFinal ? '\n  "ending": "마지막 방의 결말 문장",' : ""}
   "realClues": [{ "format": "note", "title": "단서 제목", "lines": ["한 줄"] }],
   "fakeClues": [{ "format": "document", "title": "단서 제목", "lines": ["한 줄"] }]
 }`;

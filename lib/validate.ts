@@ -106,6 +106,8 @@ export interface RoomPayload {
   hints: string[];
   explanation: string;
   professorLine: string;
+  recap?: string;
+  ending?: string;
   real: ClueSrc[];
   fake: ClueSrc[];
 }
@@ -119,6 +121,12 @@ export function clues(v: unknown, field: string, min: number, max: number): Clue
     if (!FORMATS.includes(format)) throw new Error(`${field}[${i}].format 잘못됨`);
     return { format, title: str(c.title, `${field}[${i}].title`, 30), lines: strList(c.lines, `${field}[${i}].lines`, 5, 160, 1) };
   });
+}
+
+// 탈출 후 정리 한 줄(recap)과 결말(ending)은 없거나 길이가 안 맞아도 방을 버리지 않는다 (기본 문장으로 대체)
+export function optionalStory(json: Record<string, unknown>): { recap?: string; ending?: string } {
+  const pick = (v: unknown, max: number, min: number) => (typeof v === "string" && v.trim().length >= min && v.trim().length <= max ? v.trim() : undefined);
+  return { recap: pick(json.recap, 140, 6), ending: pick(json.ending, 220, 6) };
 }
 
 export function validateRoom(json: unknown, difficulty: Difficulty, material: string): RoomPayload {
@@ -159,6 +167,7 @@ export function validateRoom(json: unknown, difficulty: Difficulty, material: st
     hints,
     explanation: str(lock.explanation, "lock.explanation", 260),
     professorLine: str(json.professorLine, "professorLine", 100),
+    ...optionalStory(json),
     real,
     fake,
   };

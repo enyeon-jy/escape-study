@@ -7,7 +7,7 @@ import { createRoom } from "@/lib/gameFactory";
 import { warmPython } from "@/lib/code/run";
 import { WALL_ORDER, type WallId } from "@/lib/scenes";
 import { THEME_NAMES, shapeLabel, spotLabel, wallLabel } from "@/lib/themes";
-import { WORLDS, spaceIndex } from "@/lib/worlds";
+import { WORLDS, endingOf, recapOf, spaceIndex } from "@/lib/worlds";
 import { ambience, isMuted, setMuted, setSoundTheme, sfx } from "@/lib/sound";
 import RoomScene from "./RoomScene";
 import ZoomView from "./ZoomView";
@@ -157,6 +157,8 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
       playedConceptIds: Array.from(new Set(played)),
       failedConcepts: success ? undefined : r.conceptIds.map(conceptName),
       professorLine: success ? undefined : r.professorLine,
+      ending: success ? endingOf(r, g.theme) : undefined,
+      recaps: g.rooms.slice(0, cur.roomIdx + (success ? 1 : 0)).map((x) => recapOf(x, g.theme)),
     });
   }
 
@@ -268,7 +270,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
         openedRef.current = false;
         setOpened(false);
       }
-    }, 2200);
+    }, 3800); // 탈출 직후 개념 정리 한 줄을 읽을 시간
   }
 
   function wrong() {
@@ -414,7 +416,14 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
             <span className="wall-label">{wallLabel(game.theme, wall)}</span>
           </>
         )}
-        {opened && <div className="unlock-msg">{THEME_NAMES[game.theme].openMsg} {room.isFinal ? "탈출구가 열렸다!" : "다음 방으로…"}</div>}
+        {opened && (
+          <div className="unlock-msg">
+            <strong>
+              {THEME_NAMES[game.theme].openMsg} {room.isFinal ? "탈출구가 열렸다!" : "다음 방으로…"}
+            </strong>
+            <span className="recap-line">{recapOf(room, game.theme)}</span>
+          </div>
+        )}
         {toast && <div className="toast">{toast}</div>}
         {game.theme === "isekai" && <Particles />}
         <GhostLayer enabled={game.theme === "horror" && game.surprise && !intro} ratio={p.remaining / cfg.roomSec} />

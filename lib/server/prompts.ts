@@ -1,3 +1,4 @@
+import { worldBlock } from "./worldPrompt";
 import { DIFFICULTY } from "../config";
 import type { Concept, Difficulty, GameMode, ThemeId } from "../types";
 
@@ -48,6 +49,7 @@ ${a.material}
 }`;
 }
 
+
 export function roomPrompt(a: {
   subject: string;
   material: string;
@@ -67,8 +69,8 @@ export function roomPrompt(a: {
 [강의자료]
 ${a.material}
 
-[테마] ${THEME_STYLE[a.theme]}
-[세계관] 시험 전날 밤 도서관에서 잠들었다 깨어 보니 시험범위 속에 갇혔다. 아침 9시 시험 전에 탈출해야 한다. (테마에 맞게 말투만 바꾼다)
+[테마 분위기] ${THEME_STYLE[a.theme]}
+${worldBlock({ theme: a.theme, index: a.index, roomCount: a.roomCount })}
 
 [이 방] ${a.index + 1}번째 방 / 전체 ${a.roomCount}개${isFinal ? " (최종 방: 탈출구가 있는 마지막 방으로 연출한다)" : ""}${isFirst ? " (첫 방: 튜토리얼처럼 쉽고 친절하게)" : ""}
 ${a.prevStory ? `[이전 방 스토리] ${a.prevStory}\n이 방은 이 이야기를 자연스럽게 이어 간다.` : ""}
@@ -87,14 +89,14 @@ ${a.roomConcepts.map((c) => `- (${c.id}) ${c.name}`).join("\n")}
   · 자료에 순서·절차가 있어 방향 순서로 낼 수 있을 때만 → "direction" (answer는 U/D/L/R 3~6글자. 진짜 단서가 각 단계의 방향을 알려 줘야 한다) 되도록 쓰지 않는다.
 - 힌트(hints)는 ${Math.max(cfg.hintsPerRoom, 1)}개 이상, 뒤로 갈수록 구체적으로. 마지막 힌트도 정답 값은 직접 말하지 않는다.
 - explanation: "왜 그게 답인지"를 자료에 근거해 1~2문장으로 설명한다 (학생이 정답을 열람했을 때 보여 준다).
-- professorLine: 탈출에 실패했을 때 나오는 한 줄 대사. 이 방의 개념과 연결한다. 예: "자네, 아직도 ○○을 모르나?" 실제 인물은 아니고 만화 속 캐릭터의 말투다.
-- 간결하게 쓴다 (응답이 길면 학생이 오래 기다린다): 단서 하나는 1~3줄, 한 줄은 50자 이내, 힌트 하나는 60자 이내, situation 80자 이내, story 80자 이내, explanation 2문장 이내.
+- (professorLine, recap, ending은 위 [스토리 규칙]을 따른다.)
+- 간결하게 쓴다 (응답이 길면 학생이 오래 기다린다): 단서 하나는 1~3줄, 한 줄은 50자 이내, 힌트 하나는 60자 이내, situation 120자 이내, story 80자 이내, explanation 2문장 이내.
 - sourceQuotes: 이 문제의 근거가 되는 강의자료의 문장을 **글자 그대로** 베낀 조각 1~3개(각 10~80자). 요약하거나 바꿔 쓰지 않는다.
 
 [출력 JSON 형식]
 {
   "name": "방 이름",
-  "situation": "짧은 상황 설명. 앞 벽의 출구 문에 자물쇠가 달려 있다는 내용을 포함",
+  "situation": "이전 방에서 이어지는 상황 + 이 공간 + 앞 벽 출구 문에 자물쇠가 달려 있다는 내용",
   "story": "이어지는 스토리 한 줄 (예: '${a.index + 1} / ...')",
   "lock": {
     "type": "dial-number | keypad | dial-alpha | direction",
@@ -105,7 +107,8 @@ ${a.roomConcepts.map((c) => `- (${c.id}) ${c.name}`).join("\n")}
     "explanation": "왜 그게 답인지 설명",
     "sourceQuotes": ["강의자료에서 글자 그대로 베낀 근거 조각"]
   },
-  "professorLine": "탈출 실패 시 대사",
+  "professorLine": "탈출 실패 시 세계관 인물의 대사",
+  "recap": "탈출 직후 보이는 개념 정리 한 줄 (머리말 포함)",${isFinal ? '\n  "ending": "마지막 방의 결말 문장",' : ""}
   "realClues": [{ "format": "note", "title": "단서 제목", "lines": ["한 줄", "한 줄"] }],
   "fakeClues": [{ "format": "document", "title": "단서 제목", "lines": ["한 줄"] }]
 }`;

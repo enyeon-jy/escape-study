@@ -68,6 +68,8 @@ export interface Room {
   conceptIds: string[];
   professorLine: string; // 실패했을 때 교수님 대사
   isFinal: boolean; // 탈출구가 있는 마지막 방
+  recap?: string; // 이 방을 탈출한 직후 보이는, 개념을 스토리로 정리한 한 줄
+  ending?: string; // 마지막 방의 결말 문장 (탈출 성공 화면에 나온다)
   space?: number; // 방의 공간 번호 (0~3). 테마마다 공간 4개가 방 순서대로 돌아간다 (lib/worlds.ts)
   codeLang?: "python" | "javascript"; // 코드 자물쇠 방이면 코드의 언어 (정답은 코드를 실제로 실행해서 정했다)
 }
@@ -124,4 +126,6 @@ export interface GameResult {
   playedConceptIds: string[]; // 이번 게임에서 다룬 개념 (복습에서 다시 물음)
   failedConcepts?: string[]; // 시간이 끝났을 때 풀던 방의 개념 이름
   professorLine?: string;
+  ending?: string; // 탈출 성공 시 결말 문장
+  recaps?: string[]; // 방마다 보았던 개념 정리 한 줄 (결과 화면에서 다시 보여 준다)
 }

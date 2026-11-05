@@ -26,6 +26,8 @@ export interface RoomSpec {
   explanation: string;
   conceptIds: string[];
   professorLine: string;
+  recap?: string;
+  ending?: string;
   real: ClueSrc[];
   fake: ClueSrc[];
   views: ViewId[]; // 클로즈업 화면 (2~3개)
@@ -141,6 +143,8 @@ export function layoutRoom(spec: RoomSpec, difficulty: Difficulty, index: number
     professorLine: spec.professorLine,
     isFinal: index === roomCount - 1,
     space: spaceIndex(index),
+    ...(spec.recap ? { recap: spec.recap } : {}),
+    ...(spec.ending && index === roomCount - 1 ? { ending: spec.ending } : {}),
     ...(spec.codeLang ? { codeLang: spec.codeLang } : {}),
   };
 }

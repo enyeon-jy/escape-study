@@ -1,0 +1,27 @@
+/* ── 스토리 표시: 탈출 직후 개념 정리 한 줄, 결말, 실패 화면의 화자 ── */
+.unlock-msg { display: flex; flex-direction: column; gap: 6px; align-items: center; left: 8px; right: 8px; bottom: 8px; padding: 10px 12px; border-radius: 10px; background: rgba(0, 0, 0, 0.72); }
+.unlock-msg strong { font-size: 1.1em; }
+.recap-line { font-weight: normal; font-size: 0.9rem; line-height: 1.5; color: #f4ecd8; text-shadow: none; animation: recap-in 0.8s ease-out both; animation-delay: 0.6s; }
+@keyframes recap-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.ending-box { margin: 0; padding: 16px 18px; border-radius: 12px; border-left: 5px solid #d8c070; background: rgba(255, 255, 255, 0.07); text-align: left; }
+.ending-box small { display: block; opacity: 0.7; margin-bottom: 4px; letter-spacing: 1px; }
+.ending-box p { margin: 0; font-size: 1.15rem; line-height: 1.7; }
+
+.professor-line .speaker { display: block; font-size: 0.8rem; opacity: 0.75; margin-bottom: 2px; }
+
+.recap-list { padding: 12px 14px; border-radius: 10px; background: rgba(255, 255, 255, 0.05); }
+.recap-list h3 { margin: 0 0 6px; font-size: 1rem; }
+.recap-list ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; line-height: 1.5; opacity: 0.92; }
+
+@media (prefers-reduced-motion: reduce) {
+  .recap-line { animation: none; }
+}
+
+/* 테마별 말투에 맞는 글꼴 */
+.app[data-theme="horror"] .ending-box p, .app[data-theme="horror"] .recap-line { font-family: "East Sea Dokdo", "Nanum Pen Script", cursive; font-size: 1.35rem; }
+.app[data-theme="horror"] .ending-box { border-left-color: #b3202a; }
+.app[data-theme="detective"] .ending-box p, .app[data-theme="detective"] .recap-line { font-family: "Nanum Gothic Coding", monospace; }
+.app[data-theme="detective"] .ending-box { border-left-color: #e0b060; }
+.app[data-theme="isekai"] .ending-box p, .app[data-theme="isekai"] .recap-line { font-family: "Song Myung", serif; }
+.app[data-theme="isekai"] .ending-box { border-left-color: #6af5d8; box-shadow: 0 0 22px #6af5d844; }

@@ -51,6 +51,8 @@ export function finalizeCodeRoom(game: GameData, index: number, p: CodeRoomPaylo
     explanation,
     conceptIds,
     professorLine: p.professorLine,
+    recap: p.recap,
+    ending: p.ending,
     // 모니터에 뜨는 코드가 첫 번째 진짜 단서, 나머지는 코드를 어디에 쓰는지 알려 주는 단서
     real: [{ title: "컴퓨터 화면", format: "code" as const, lines: p.source.split("\n") }, ...p.real].slice(0, cfg.realClues[1]),
     fake: p.fake,

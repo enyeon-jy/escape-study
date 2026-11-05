@@ -140,6 +140,8 @@ export async function POST(req: Request) {
           explanation: payload.explanation,
           conceptIds: roomConcepts.map((c) => c.id),
           professorLine: payload.professorLine,
+          recap: payload.recap,
+          ending: payload.ending,
           real: payload.real,
           fake: payload.fake,
           views,

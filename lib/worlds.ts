@@ -78,3 +78,15 @@ export const WORLDS: Record<ThemeId, World> = {
 export const SPACE_COUNT = 4;
 export const spaceIndex = (roomIndex: number) => ((roomIndex % SPACE_COUNT) + SPACE_COUNT) % SPACE_COUNT;
 export const spaceOf = (theme: ThemeId, roomIndex: number): Space => WORLDS[theme].spaces[spaceIndex(roomIndex)];
+
+// 방을 탈출한 직후 보이는 개념 정리 한 줄. AI가 못 만들었으면 정답 설명의 첫 문장으로 대신한다.
+export function recapOf(room: { recap?: string; lock: { explanation: string } }, theme: ThemeId): string {
+  if (room.recap) return room.recap;
+  const first = room.lock.explanation.split(/(?<=[.!?。])\s+/)[0] ?? "";
+  return `${WORLDS[theme].recapLabel}: ${first.slice(0, 90)}`;
+}
+
+// 마지막 방을 탈출했을 때의 결말. AI가 못 만들었으면 세계관의 기본 결말을 쓴다.
+export function endingOf(room: { ending?: string }, theme: ThemeId): string {
+  return room.ending ?? WORLDS[theme].ending;
+}

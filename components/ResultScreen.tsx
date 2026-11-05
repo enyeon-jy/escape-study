@@ -1,15 +1,18 @@
 "use client";
 
-import type { GameResult } from "@/lib/types";
+import type { GameResult, ThemeId } from "@/lib/types";
+import { WORLDS } from "@/lib/worlds";
 
 interface Props {
+  theme: ThemeId;
   result: GameResult;
   surprise: boolean; // 3단계(교수님 등장 연출)에서 사용
   onRetry: () => void;
   onStudy: () => void;
 }
 
-export default function ResultScreen({ result, onRetry, onStudy }: Props) {
+export default function ResultScreen({ theme, result, onRetry, onStudy }: Props) {
+  const world = WORLDS[theme];
   const m = Math.floor(result.elapsedSec / 60);
   const s = result.elapsedSec % 60;
 
@@ -17,7 +20,18 @@ export default function ResultScreen({ result, onRetry, onStudy }: Props) {
     <section className="screen">
       <h1 className={`title ${result.success ? "win" : "lose"}`}>{result.success ? "탈출 성공!" : "탈출 실패…"}</h1>
 
-      {!result.success && result.professorLine && <p className="professor-line">“{result.professorLine}”</p>}
+      {result.success && result.ending && (
+        <blockquote className="ending-box">
+          <small>{world.title}</small>
+          <p>{result.ending}</p>
+        </blockquote>
+      )}
+      {!result.success && result.professorLine && (
+        <p className="professor-line">
+          <small className="speaker">{world.villain}</small>
+          “{result.professorLine}”
+        </p>
+      )}
       {!result.success && result.failedConcepts && (
         <p className="tip">막힌 개념: {result.failedConcepts.join(", ")}</p>
       )}
@@ -48,6 +62,17 @@ export default function ResultScreen({ result, onRetry, onStudy }: Props) {
           <dd>{result.wrongLocks.length ? result.wrongLocks.join(", ") : "없음"}</dd>
         </div>
       </dl>
+
+      {result.recaps && result.recaps.length > 0 && (
+        <section className="recap-list" aria-label="스토리 속 개념 정리">
+          <h3>이야기로 정리한 개념</h3>
+          <ol>
+            {result.recaps.map((r, i) => (
+              <li key={i}>{r}</li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       <div className="actions">
         <button className="btn ghost" onClick={onRetry}>

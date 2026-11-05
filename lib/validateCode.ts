@@ -2,7 +2,7 @@ import { checkSource, normalizeSource, type CodeLang } from "./code/safe";
 import { DIFFICULTY } from "./config";
 import type { ClueSrc } from "./layout";
 import type { Difficulty } from "./types";
-import { clues, isObj, squash, str, strList } from "./validate";
+import { clues, isObj, optionalStory, squash, str, strList } from "./validate";
 
 // 프로그래밍 과목의 "코드 자물쇠" 방: AI 응답 검사.
 // AI는 코드와 주변 단서만 만든다. 정답(claimedAnswer)은 믿지 않고, 브라우저가 코드를 실제로 실행해서 정한다.
@@ -11,6 +11,8 @@ export interface CodeRoomPayload {
   situation: string;
   story: string;
   professorLine: string;
+  recap?: string;
+  ending?: string;
   lang: CodeLang;
   source: string; // 모니터에 뜨는 코드 (5~10줄)
   question: string;
@@ -54,6 +56,7 @@ export function validateCodeRoom(json: unknown, difficulty: Difficulty, material
     situation: str(json.situation, "situation", 160),
     story: str(json.story, "story", 200),
     professorLine: str(json.professorLine, "professorLine", 100),
+    ...optionalStory(json),
     lang,
     source: normalizeSource(code.source as string),
     question: str(lock.question, "lock.question", 120),

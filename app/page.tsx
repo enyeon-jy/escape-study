@@ -112,6 +112,7 @@ export default function Home() {
         )}
         {screen === "result" && game && result && (
           <ResultScreen
+            theme={game.theme}
             result={result}
             surprise={game.surprise}
             onRetry={retry}
