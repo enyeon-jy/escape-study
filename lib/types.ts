@@ -1,16 +1,19 @@
+import type { LockType } from "./lock";
+
 export type ThemeId = "horror" | "isekai" | "detective";
 export type Difficulty = "easy" | "normal" | "hard";
 export type GameMode = "quick" | "full";
 
 export type ClueFormat = "note" | "diary" | "chat" | "document" | "sms" | "recording";
+export type ViewId = "shelf" | "desk" | "cabinet"; // 클로즈업 화면 (방마다 2~3개)
+export type SlotShape = "drawer" | "notebook" | "cup" | "box" | "book";
 
 export interface Concept {
   id: string;
   name: string;
 }
 
-// 단서 조각. 가짜 단서(fake)는 그럴듯하지만 답과 상관없다.
-// 화면에서는 진짜/가짜를 구분해 보여 주지 않는다.
+// 단서 조각. 가짜 단서(fake)는 그럴듯하지만 답과 상관없다. 화면에서는 진짜/가짜를 구분해 보여 주지 않는다.
 export interface Clue {
   id: string;
   kind: "real" | "fake";
@@ -19,22 +22,49 @@ export interface Clue {
   lines: string[];
 }
 
+// 가방에 들어가는 아이템 (방마다 열쇠 1개 정도)
+export interface Item {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+// 물건 안에 들어 있는 것: 단서 또는 아이템 (없으면 "아무것도 없다")
+export interface Content {
+  clueId?: string;
+  itemId?: string;
+}
+
+// 클로즈업 화면 안의 작은 물건 (서랍, 노트, 컵 등)
+export interface Slot {
+  id: string;
+  label: string;
+  shape: SlotShape;
+  content: Content | null;
+  lockedBy?: string; // 이 아이템으로만 열린다
+}
+
+export interface RoomView {
+  id: ViewId;
+  slots: Slot[]; // 3칸
+}
+
 export interface Room {
   id: string;
   name: string;
   situation: string; // 짧은 상황 설명
   story: string; // 이어지는 스토리 한 줄
-  // 방 장면의 물건 id → 그 물건에서 나오는 단서 id (없으면 "아무것도 없다")
-  placements: Record<string, string | null>;
+  wallSpots: Record<string, Content | null>; // 벽에 바로 있는 물건 (frame, board, trash)
+  views: RoomView[]; // 클로즈업 화면 2~3개
+  items: Item[];
   clues: Clue[];
   lock: {
-    kind: "door" | "safe";
-    question: string;
+    type: LockType; // AI가 정답 종류(숫자·영어 약자·순서)에 맞게 정한다
     answer: string; // 정답 (코드가 비교)
-    units?: string[]; // 무시할 단위
+    units?: string[];
     hints: string[]; // 앞에서부터 순서대로 보여 줌
   };
-  conceptIds: string[]; // 이 방에서 다루는 개념
+  conceptIds: string[];
   professorLine: string; // 실패했을 때 교수님 대사
   isFinal: boolean; // 탈출구가 있는 마지막 방
 }
@@ -65,6 +95,8 @@ export interface Progress {
   remaining: number; // 현재 방 남은 시간(초)
   foundClueIds: string[]; // 현재 방에서 찾은 단서
   inspected: string[]; // 현재 방에서 조사한 물건
+  bag: string[]; // 가방 속 아이템
+  unlocked: string[]; // 열어 둔 잠긴 곳
   hintsShown: number; // 현재 방에서 본 힌트 수
   hintsUsed: number; // 전체 힌트 사용 수
   wrongRooms: string[]; // 한 번이라도 틀렸던 방 이름

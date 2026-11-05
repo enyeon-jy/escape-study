@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Clue, GameData, GameResult, Progress, Room } from "@/lib/types";
-import { DIFFICULTY } from "@/lib/config";
-import { isCorrect } from "@/lib/answer";
+import type { Clue, GameData, GameResult, Item, Progress, Room, RoomView, ViewId } from "@/lib/types";
+import { DIFFICULTY, STORY_INTRO } from "@/lib/config";
 import { createRoom } from "@/lib/gameFactory";
-import { SCENE_OBJECTS } from "@/lib/scenes";
+import { SPOT_LABEL, WALL_LABEL, WALL_ORDER, type WallId } from "@/lib/scenes";
+import { isMuted, setMuted, sfx } from "@/lib/sound";
 import RoomScene from "./RoomScene";
+import ZoomView from "./ZoomView";
 import ClueCard from "./ClueCard";
+import LockPanel from "./LockPanel";
 
 interface Props {
   game: GameData;
@@ -17,7 +19,7 @@ interface Props {
   onFinish: (r: GameResult) => void;
 }
 
-type Modal = { type: "clue"; clue: Clue } | { type: "empty"; label: string } | { type: "lock" } | null;
+type Modal = { type: "clue"; clue: Clue } | { type: "item"; item: Item } | { type: "lock" } | null;
 
 function fmt(sec: number) {
   const m = Math.floor(sec / 60);
@@ -31,11 +33,28 @@ function freshProgress(game: GameData): Progress {
     remaining: DIFFICULTY[game.difficulty].roomSec,
     foundClueIds: [],
     inspected: [],
+    bag: [],
+    unlocked: [],
     hintsShown: 0,
     hintsUsed: 0,
     wrongRooms: [],
     clearedSec: [],
   };
+}
+
+interface SpotInfo {
+  label: string;
+  content: { clueId?: string; itemId?: string } | null;
+  lockedBy?: string;
+}
+
+function findSpot(room: Room, id: string): SpotInfo | null {
+  if (id in room.wallSpots) return { label: SPOT_LABEL[id] ?? id, content: room.wallSpots[id] };
+  for (const v of room.views) {
+    const s = v.slots.find((x) => x.id === id);
+    if (s) return { label: s.label, content: s.content, lockedBy: s.lockedBy };
+  }
+  return null;
 }
 
 export default function EscapeScreen({ game, initialProgress, onProgress, onRoomReady, onFinish }: Props) {
@@ -45,12 +64,20 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
   const gameRef = useRef(game);
   gameRef.current = game;
 
-  const [input, setInput] = useState("");
+  const [wall, setWall] = useState<WallId>("front");
+  const [zoom, setZoom] = useState<ViewId | null>(null);
+  const [selected, setSelected] = useState<string | null>(null); // 가방에서 고른 아이템
+  const [toast, setToast] = useState<string | null>(null);
   const [modal, setModal] = useState<Modal>(null);
-  const [shake, setShake] = useState(false);
   const [opened, setOpened] = useState(false);
   const openedRef = useRef(false);
   const finished = useRef(false);
+  const [intro, setIntro] = useState(initialProgress === null); // 새 게임이면 세계관 소개부터
+  const introRef = useRef(intro);
+  const [tipOpen, setTipOpen] = useState(true);
+  const [muted, setMutedState] = useState(false);
+
+  useEffect(() => setMutedState(isMuted()), []);
 
   // 방 미리 만들기 상태
   const loadingIdx = useRef<number | null>(null);
@@ -69,6 +96,12 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
     onProgress(p);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(null), 2600);
+    return () => clearTimeout(id);
+  }, [toast]);
 
   function finish(success: boolean, lastSpent: number) {
     if (finished.current) return;
@@ -91,10 +124,10 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
     });
   }
 
-  // 방 타이머 (방이 준비되어 있고 문이 열리는 중이 아닐 때만 흐른다)
+  // 방 타이머: 방이 준비되어 있고, 소개 중이 아니며, 문이 열리는 중이 아닐 때만 흐른다
   useEffect(() => {
     const id = setInterval(() => {
-      if (finished.current || openedRef.current) return;
+      if (finished.current || openedRef.current || introRef.current) return;
       if (!gameRef.current.rooms[pRef.current.roomIdx]) return;
       const next = Math.max(0, pRef.current.remaining - 1);
       update((prev) => ({ ...prev, remaining: next }));
@@ -123,52 +156,89 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game, p.roomIdx, blockedIdx]);
 
-  function inspect(objId: string) {
-    if (!room || opened) return;
-    const clueId = room.placements[objId];
-    const clue = room.clues.find((c) => c.id === clueId);
-    update((prev) => ({
-      ...prev,
-      inspected: prev.inspected.includes(objId) ? prev.inspected : [...prev.inspected, objId],
-      foundClueIds: clue && !prev.foundClueIds.includes(clue.id) ? [...prev.foundClueIds, clue.id] : prev.foundClueIds,
-    }));
-    const label = SCENE_OBJECTS[game.theme].find((o) => o.id === objId)?.label ?? objId;
-    setModal(clue ? { type: "clue", clue } : { type: "empty", label });
+  function reveal(id: string, info: SpotInfo) {
+    const cur = pRef.current;
+    const already = cur.inspected.includes(id);
+    update((prev) => ({ ...prev, inspected: prev.inspected.includes(id) ? prev.inspected : [...prev.inspected, id] }));
+    const c = info.content;
+    const clue = c?.clueId ? room?.clues.find((x) => x.id === c.clueId) : undefined;
+    const item = c?.itemId ? room?.items.find((x) => x.id === c.itemId) : undefined;
+    if (clue) {
+      update((prev) => ({ ...prev, foundClueIds: prev.foundClueIds.includes(clue.id) ? prev.foundClueIds : [...prev.foundClueIds, clue.id] }));
+      setModal({ type: "clue", clue });
+    } else if (item) {
+      if (already) {
+        setToast("이미 가져왔다.");
+      } else {
+        sfx.pickup();
+        update((prev) => ({ ...prev, bag: [...prev.bag, item.id] }));
+        setModal({ type: "item", item });
+      }
+    } else {
+      setToast(`${info.label}… 아무것도 없다.`);
+    }
   }
 
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
+  function pressSpot(id: string) {
     if (!room || opened || finished.current) return;
-    if (isCorrect(input, room.lock.answer, room.lock.units)) {
-      openedRef.current = true;
-      setOpened(true);
-      setModal(null);
-      setTimeout(() => {
-        const cur = pRef.current;
-        const spent = cfg.roomSec - cur.remaining;
-        if (room.isFinal || cur.roomIdx + 1 >= gameRef.current.roomCount) {
-          finish(true, spent);
-        } else {
-          update((prev) => ({
-            ...prev,
-            roomIdx: prev.roomIdx + 1,
-            remaining: cfg.roomSec,
-            foundClueIds: [],
-            inspected: [],
-            hintsShown: 0,
-            clearedSec: [...prev.clearedSec, spent],
-          }));
-          openedRef.current = false;
-          setOpened(false);
-          setInput("");
-        }
-      }, 1400);
-    } else {
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
-      if (!pRef.current.wrongRooms.includes(room.name)) {
-        update((prev) => ({ ...prev, wrongRooms: [...prev.wrongRooms, room.name] }));
+    const info = findSpot(room, id);
+    if (!info) {
+      setToast("아무것도 없다.");
+      return;
+    }
+    const cur = pRef.current;
+    if (info.lockedBy && !cur.unlocked.includes(id)) {
+      if (selected === info.lockedBy) {
+        sfx.unlock();
+        update((prev) => ({ ...prev, unlocked: [...prev.unlocked, id], bag: prev.bag.filter((b) => b !== info.lockedBy) }));
+        setSelected(null);
+        setToast(`열쇠로 ${info.label}을(를) 열었다!`);
+        reveal(id, info);
+      } else {
+        sfx.error();
+        setToast(`${info.label}은(는) 잠겨 있다. 가방에서 아이템을 고른 뒤 눌러 보세요.`);
       }
+      return;
+    }
+    reveal(id, info);
+  }
+
+  function solved() {
+    if (!room) return;
+    openedRef.current = true;
+    setOpened(true);
+    setModal(null);
+    setZoom(null);
+    setWall("front");
+    sfx.door();
+    setTimeout(() => {
+      const cur = pRef.current;
+      const spent = cfg.roomSec - cur.remaining;
+      if (room.isFinal || cur.roomIdx + 1 >= gameRef.current.roomCount) {
+        finish(true, spent);
+      } else {
+        update((prev) => ({
+          ...prev,
+          roomIdx: prev.roomIdx + 1,
+          remaining: cfg.roomSec,
+          foundClueIds: [],
+          inspected: [],
+          bag: [],
+          unlocked: [],
+          hintsShown: 0,
+          clearedSec: [...prev.clearedSec, spent],
+        }));
+        setSelected(null);
+        openedRef.current = false;
+        setOpened(false);
+      }
+    }, 2200);
+  }
+
+  function wrong() {
+    if (!room) return;
+    if (!pRef.current.wrongRooms.includes(room.name)) {
+      update((prev) => ({ ...prev, wrongRooms: [...prev.wrongRooms, room.name] }));
     }
   }
 
@@ -177,6 +247,11 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
   function showHint() {
     if (!room || p.hintsShown >= hintLimit || opened) return;
     update((prev) => ({ ...prev, hintsShown: prev.hintsShown + 1, hintsUsed: prev.hintsUsed + 1 }));
+  }
+
+  function turn(d: number) {
+    const i = WALL_ORDER.indexOf(wall) + d;
+    if (i >= 0 && i < WALL_ORDER.length) setWall(WALL_ORDER[i]);
   }
 
   // 방을 아직 못 만들었을 때
@@ -208,7 +283,29 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
     );
   }
 
+  if (intro) {
+    return (
+      <section className="screen center intro">
+        <h1 className="title">시험범위에 갇혔다</h1>
+        <p className="intro-story">{STORY_INTRO[game.theme]}</p>
+        <p className="tip">방마다 제한 시간이 있어요. 지금부터 시간이 흘러요.</p>
+        <button
+          className="btn primary"
+          onClick={() => {
+            introRef.current = false;
+            setIntro(false);
+          }}
+        >
+          눈을 뜬다
+        </button>
+      </section>
+    );
+  }
+
   const found = room.clues.filter((c) => p.foundClueIds.includes(c.id));
+  const bagItems = room.items.filter((it) => p.bag.includes(it.id));
+  const zoomView: RoomView | undefined = zoom ? room.views.find((v) => v.id === zoom) : undefined;
+  const idx = WALL_ORDER.indexOf(wall);
 
   return (
     <section className="screen">
@@ -217,6 +314,17 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
           방 {p.roomIdx + 1} / {game.roomCount}
           {room.isFinal ? " · 최종 방" : ""}
         </span>
+        <button
+          type="button"
+          className="btn ghost mute"
+          onClick={() => {
+            setMuted(!muted);
+            setMutedState(!muted);
+          }}
+          aria-label={muted ? "소리 켜기" : "소리 끄기"}
+        >
+          {muted ? "🔇" : "🔊"}
+        </button>
         <span className={`timer ${p.remaining <= 30 ? "danger" : ""}`} aria-label="이 방의 남은 시간">
           {fmt(p.remaining)}
         </span>
@@ -227,17 +335,71 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
       <p className="situation">{room.situation}</p>
 
       <div className={`scene-wrap ${opened ? "unlocked" : ""}`}>
-        <RoomScene
-          theme={game.theme}
-          lockKind={room.lock.kind}
-          lockOpened={opened}
-          inspected={p.inspected}
-          onObject={inspect}
-          onLock={() => !opened && setModal({ type: "lock" })}
-        />
+        {zoomView ? (
+          <ZoomView
+            view={zoomView}
+            inspected={p.inspected}
+            unlocked={p.unlocked}
+            onSlot={(s) => pressSpot(s.id)}
+            onBack={() => setZoom(null)}
+          />
+        ) : (
+          <>
+            <RoomScene
+              wall={wall}
+              views={room.views.map((v) => v.id)}
+              inspected={p.inspected}
+              doorOpened={opened}
+              onSpot={pressSpot}
+              onZoom={(v) => setZoom(v)}
+              onDoor={() => !opened && setModal({ type: "lock" })}
+            />
+            <button type="button" className="turn-btn left" onClick={() => turn(-1)} disabled={idx === 0} aria-label="왼쪽으로 돌아보기">
+              ←
+            </button>
+            <button type="button" className="turn-btn right" onClick={() => turn(1)} disabled={idx === WALL_ORDER.length - 1} aria-label="오른쪽으로 돌아보기">
+              →
+            </button>
+            <span className="wall-label">{WALL_LABEL[wall]}</span>
+          </>
+        )}
         {opened && <div className="unlock-msg">철컥! {room.isFinal ? "탈출구가 열렸다!" : "다음 방으로…"}</div>}
+        {toast && <div className="toast">{toast}</div>}
       </div>
-      <p className="tip">물건을 눌러 조사해 보세요. {room.lock.kind === "door" ? "문" : "금고"}을 누르면 답을 입력할 수 있어요.</p>
+
+      {p.roomIdx === 0 && tipOpen && (
+        <div className="tutorial" role="note">
+          <p>
+            <strong>조작법</strong>
+          </p>
+          <ul>
+            <li>화면 양옆 ← → 로 고개를 돌려 벽을 둘러봐요.</li>
+            <li>책상·책장·캐비닛은 눌러서 가까이 볼 수 있어요. ↓ 로 돌아와요.</li>
+            <li>찾은 단서는 단서 수첩에 모여요. 앞 벽의 문을 눌러 자물쇠를 풀어 보세요.</li>
+          </ul>
+          <button type="button" className="btn ghost" onClick={() => setTipOpen(false)}>
+            알겠어요
+          </button>
+        </div>
+      )}
+
+      <section className="bag" aria-label="가방">
+        <h3>🎒 가방</h3>
+        {bagItems.length === 0 ? (
+          <p className="tip">비어 있어요. 열쇠 같은 아이템을 찾으면 여기에 들어가요.</p>
+        ) : (
+          <ul>
+            {bagItems.map((it) => (
+              <li key={it.id}>
+                <button type="button" className={selected === it.id ? "selected" : ""} onClick={() => setSelected(selected === it.id ? null : it.id)} aria-pressed={selected === it.id}>
+                  {it.icon} {it.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {selected && <p className="tip">잠긴 곳을 눌러 아이템을 써 보세요.</p>}
+      </section>
 
       <div className="hints">
         <button type="button" className="btn ghost" onClick={showHint} disabled={p.hintsShown >= hintLimit || opened}>
@@ -268,29 +430,20 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
       </section>
 
       {modal && (
-        <div className="modal" role="dialog" aria-modal="true" onClick={() => setModal(null)}>
+        <div className="modal" role="dialog" aria-modal="true" onClick={() => modal.type !== "lock" && setModal(null)}>
           <div className="modal-body" onClick={(e) => e.stopPropagation()}>
             {modal.type === "clue" && <ClueCard clue={modal.clue} />}
-            {modal.type === "empty" && <p className="empty-msg">{modal.label}… 아무것도 없다.</p>}
-            {modal.type === "lock" && (
-              <form onSubmit={submit} className="lock-form">
-                <div className={`lock ${shake ? "shake" : ""}`} aria-hidden="true">
-                  🔒
-                </div>
-                <p className="question">{room.lock.question}</p>
-                <div className="row">
-                  <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="정답 입력" autoComplete="off" autoFocus />
-                  <button className="btn primary" type="submit">
-                    열기
-                  </button>
-                </div>
-                {shake && <p className="error">철컥… 열리지 않는다.</p>}
-                <p className="tip">수첩의 단서를 조합해 보세요.</p>
-              </form>
+            {modal.type === "item" && (
+              <p className="empty-msg">
+                {modal.item.icon} <strong>{modal.item.name}</strong>을(를) 찾았다! 가방에 넣었다.
+              </p>
             )}
-            <button type="button" className="btn ghost close" onClick={() => setModal(null)}>
-              닫기
-            </button>
+            {modal.type === "lock" && <LockPanel lock={room.lock} onSolved={solved} onWrong={wrong} onClose={() => setModal(null)} />}
+            {modal.type !== "lock" && (
+              <button type="button" className="btn ghost close" onClick={() => setModal(null)}>
+                닫기
+              </button>
+            )}
           </div>
         </div>
       )}

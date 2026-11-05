@@ -157,3 +157,36 @@ input, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px so
   .flicker, .screen-glow, .redglow, .blink-dot, .loading-lock { animation: none !important; }
   .walls-track, .shackle, .door-panel { transition: none !important; }
 }
+
+/* ── 1인칭 방: 벽 돌아보기·클로즈업·가방 ─────────────── */
+.walls-viewport { overflow: hidden; width: 100%; }
+.walls-track { display: flex; transition: transform 0.55s ease-in-out; }
+.wall-cell { flex: 0 0 100%; }
+.wall-svg { display: block; width: 100%; height: auto; }
+.turn-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 64px; border: 0; border-radius: 10px; background: rgba(0, 0, 0, 0.55); color: #ffd9d0; font-size: 1.6rem; cursor: pointer; z-index: 2; }
+.turn-btn.left { left: 6px; } .turn-btn.right { right: 6px; }
+.turn-btn:disabled { opacity: 0.2; cursor: default; }
+.wall-label { position: absolute; left: 10px; bottom: 8px; font-size: 0.8rem; background: rgba(0, 0, 0, 0.55); padding: 2px 8px; border-radius: 10px; z-index: 2; }
+.zoom-view { position: relative; }
+.back-btn { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); padding: 8px 16px; border: 0; border-radius: 20px; background: rgba(0, 0, 0, 0.7); color: #ffd9d0; font: inherit; cursor: pointer; z-index: 2; }
+.toast { position: absolute; left: 12px; right: 12px; top: 10px; background: rgba(0, 0, 0, 0.8); border: 1px solid #5a2a2a; padding: 8px 12px; border-radius: 8px; text-align: center; z-index: 3; }
+.redglow { animation: flick 7s ease-in-out infinite; }
+.door-panel { transition: transform 1.2s ease-in-out; transform-box: fill-box; transform-origin: left center; }
+.door-spot.opened .door-panel { transform: scaleX(0.12); }
+.exit-light { transition: opacity 1.6s ease-in; }
+
+.bag { background: #17171b; border: 1px solid #333; border-radius: 10px; padding: 12px; }
+.bag h3 { margin: 0 0 8px; font-size: 1rem; }
+.bag ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.bag button { background: #2a2d36; color: inherit; border: 2px solid #555; border-radius: 8px; padding: 8px 12px; font: inherit; cursor: pointer; }
+.bag button.selected { border-color: #ffd98a; box-shadow: 0 0 8px #ffd98a88; }
+.tutorial { background: #20262e; border: 1px solid #4a5d86; border-radius: 12px; padding: 12px 16px; }
+.tutorial p { margin: 0 0 4px; } .tutorial ul { margin: 0 0 8px; padding-left: 20px; }
+.intro-story { font-size: 1.1rem; line-height: 1.7; max-width: 30em; }
+.hud .mute { padding: 4px 10px; }
+
+/* 배경 이미지 자리: public/backgrounds/ 에 공포.png · 이세계.png · 추리.png 를 넣으면 바로 쓰인다.
+   파일이 없으면 이미지 층은 그려지지 않고 아래 CSS 배경만 보인다. */
+.app[data-mode="game"][data-theme="horror"] .bg { background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url("/backgrounds/%EA%B3%B5%ED%8F%AC.png") center / cover no-repeat, radial-gradient(ellipse at top, #2a0a0a, #0b0b0d 70%); }
+.app[data-mode="game"][data-theme="isekai"] .bg { background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url("/backgrounds/%EC%9D%B4%EC%84%B8%EA%B3%84.png") center / cover no-repeat, radial-gradient(ellipse at top, #1d1240, #0b0b14 70%); }
+.app[data-mode="game"][data-theme="detective"] .bg { background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url("/backgrounds/%EC%B6%94%EB%A6%AC.png") center / cover no-repeat, radial-gradient(ellipse at top, #2b2b2b, #0b0b0d 70%); }
