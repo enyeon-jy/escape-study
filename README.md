@@ -75,7 +75,7 @@
 
 | 항목 | 내용 |
 |---|---|
-| 기술 | Next.js 16(App Router), React 19, TypeScript. 별도 UI·게임 라이브러리 없이 SVG·CSS·Web Audio로 그림과 소리를 만듦(그림 파일 없이) |
+| 기술 | Next.js 16(App Router), React 19, TypeScript. 별도 UI·게임 라이브러리 없이 방과 자물쇠 그림은 SVG·CSS로, 소리는 Web Audio로 만들고, 탈출 성공 화면의 문 이미지 1장만 교내 GPU로 생성한 파일을 사용 |
 | 배포 | Vercel 무료 Hobby, GitHub `main`에 push하면 자동 배포 |
 | AI 호출 | `app/api/generate/route.ts`(서버)에서만. 키는 화면 코드에 없음 |
 | 저장 | **Supabase(무료 요금제)에 게임 설정과 플레이 기록만 저장.** `games`: 과목명·테마·난이도·게임 길이·방 JSON, `play_logs`: 성공 여부·걸린 시간·힌트 수·정답 열람 수·복습 완료 여부. **강의자료 원문, 이름·이메일, IP는 저장하지 않는다.** 저장은 서버 함수(`/api/save`)에서만, 테이블은 RLS를 켜 공개 키로는 접근할 수 없다. 저장이 실패해도 게임은 그대로 진행된다. 테이블 생성 SQL은 [`supabase/schema.sql`](supabase/schema.sql), 설정 방법은 [docs/supabase.md](docs/supabase.md) |
