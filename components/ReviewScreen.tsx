@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { GameData, GameResult } from "@/lib/types";
 import { isCorrect } from "@/lib/answer";
 
@@ -8,9 +8,10 @@ interface Props {
   game: GameData;
   result: GameResult;
   onBack: () => void;
+  onDone?: () => void; // 복습을 끝까지 마쳤을 때 (결과 기록에 "복습 완료"를 남긴다)
 }
 
-export default function ReviewScreen({ game, result, onBack }: Props) {
+export default function ReviewScreen({ game, result, onBack, onDone }: Props) {
   // 이번 게임에서 다뤘던 개념만 다시 묻는다. 틀린 문제는 맞힐 때까지 큐 맨 뒤로 보내 다시 낸다.
   const [items] = useState(() => {
     const played = game.review.filter((r) => result.playedConceptIds.includes(r.conceptId));
@@ -24,7 +25,13 @@ export default function ReviewScreen({ game, result, onBack }: Props) {
   const [input, setInput] = useState("");
   const [feedback, setFeedback] = useState<"none" | "right" | "wrong">("none");
 
-  if (queue.length === 0) {
+  const finished = queue.length === 0;
+  useEffect(() => {
+    if (finished) onDone?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finished]);
+
+  if (finished) {
     return (
       <section className="screen center">
         <h1 className="title">복습 완료!</h1>

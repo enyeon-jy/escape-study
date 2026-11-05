@@ -1,3 +1,4 @@
+import { newId } from "./cloud";
 import type { LockType } from "./lock";
 import { layoutRoom, type ClueSrc, type RoomSpec } from "./layout";
 import type { Concept, Difficulty, GameData, GameMode, ReviewItem, Room, ThemeId, ViewId } from "./types";
@@ -324,6 +325,7 @@ export function sampleCreateGame(o: SampleOptions): GameData {
   // 예시는 방 4개(코드 자물쇠 방 포함)로 고정한다. AI를 부르지 않는 시연용이라 게임 길이 선택과 무관하다.
   const roomCount = TEMPLATES.length;
   const game: GameData = {
+    id: newId(),
     subject: o.subject.trim() || SAMPLE_SUBJECT,
     theme: o.theme,
     difficulty: o.difficulty,

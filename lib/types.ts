@@ -80,6 +80,7 @@ export interface ReviewItem {
 }
 
 export interface GameData {
+  id?: string; // 게임 한 판의 고유 번호 (Supabase 저장용. 예전에 저장된 게임에는 없을 수 있다)
   subject: string;
   theme: ThemeId;
   difficulty: Difficulty;

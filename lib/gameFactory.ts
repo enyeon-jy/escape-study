@@ -1,6 +1,7 @@
 import { AI_ERROR_MESSAGE, MATERIAL_MAX_CHARS } from "./config";
 import { codeRoomIndex, detectCodeLang } from "./code/detect";
 import { finalizeCodeRoom } from "./code/finalize";
+import { newId } from "./cloud";
 import { runCode } from "./code/run";
 import { computeRoomCount, limitMaterial } from "./rooms";
 import type { CodeRoomPayload } from "./validateCode";
@@ -59,6 +60,7 @@ export async function createGame(o: CreateGameOptions): Promise<GameData> {
   });
 
   const game: GameData = {
+    id: newId(),
     subject: o.subject.trim() || "내 강의자료",
     theme: o.theme,
     difficulty: o.difficulty,
