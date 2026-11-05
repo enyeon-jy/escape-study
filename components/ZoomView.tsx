@@ -66,6 +66,9 @@ export default function ZoomView({ theme, view, inspected, unlocked, onSlot, onB
           );
         })}
       </svg>
+      <button type="button" className="modal-x zoom-x" onClick={onBack} aria-label="닫기">
+        ✕
+      </button>
       <button type="button" className="back-btn" onClick={onBack} aria-label="방 전체로 돌아가기">
         ↓ 돌아가기
       </button>

@@ -97,7 +97,8 @@ export default function LockPanel({ theme, lock, onSolved, onWrong, onClose }: P
     if (checkLock(lock, value)) {
       setStatus("ok");
       sfx.unlock();
-      later(onSolved, 1000);
+      // 맞힌 뒤 1초 안에 창을 닫아도 문은 열린다 (창이 사라져도 이 타이머는 취소하지 않는다)
+      setTimeout(onSolved, 1000);
     } else {
       setStatus("wrong");
       sfx.error();

@@ -65,7 +65,7 @@ function findSpot(room: Room, id: string, theme: ThemeId): SpotInfo | null {
 
 export default function EscapeScreen({ game, initialProgress, onProgress, onRoomReady, onFinish }: Props) {
   const cfg = DIFFICULTY[game.difficulty];
-  const [p, setP] = useState<Progress>(() => initialProgress ?? freshProgress(game));
+  const [p, setP] = useState<Progress>(() => (initialProgress ? { ...freshProgress(game), ...initialProgress } : freshProgress(game)));
   const pRef = useRef(p);
   const gameRef = useRef(game);
   gameRef.current = game;
@@ -75,6 +75,8 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
   const [selected, setSelected] = useState<string | null>(null); // 가방에서 고른 아이템
   const [toast, setToast] = useState<string | null>(null);
   const [modal, setModal] = useState<Modal>(null);
+  const modalRef = useRef<Modal>(null);
+  modalRef.current = modal;
   const [opened, setOpened] = useState(false);
   const openedRef = useRef(false);
   const finished = useRef(false);
@@ -89,6 +91,17 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
   useEffect(() => {
     if (game.codeLang === "python" && game.codeRoomIdx !== undefined && !game.rooms[game.codeRoomIdx] && !game.isSample) warmPython();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Esc: 열려 있는 창을 닫고, 창이 없으면 확대 화면에서 방 전체로 돌아간다
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (modalRef.current) setModal(null);
+      else setZoom(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   // 테마에 맞는 효과음과 배경 소리. 소개 화면의 버튼을 누른 뒤부터 흐른다.
@@ -473,8 +486,11 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
       </section>
 
       {modal && (
-        <div className="modal" role="dialog" aria-modal="true" onClick={() => modal.type !== "lock" && modal.type !== "reveal" && setModal(null)}>
+        <div className="modal" role="dialog" aria-modal="true" onClick={() => setModal(null)}>
           <div className="modal-body" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="modal-x" onClick={() => setModal(null)} aria-label="닫기">
+              ✕
+            </button>
             {modal.type === "clue" && <ClueCard clue={modal.clue} />}
             {modal.type === "item" && (
               <p className="empty-msg">

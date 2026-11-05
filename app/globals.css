@@ -103,8 +103,12 @@ input, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px so
 .notebook button { background: #e9dfc7; color: #2a2118; border: 0; border-radius: 4px; padding: 8px 12px; font: inherit; cursor: pointer; }
 
 .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); z-index: 10; display: flex; align-items: center; justify-content: center; padding: 16px; }
-.modal-body { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; max-height: 90vh; overflow: auto; }
-.modal-body .close { align-self: center; background: #17171b; }
+.modal-body { position: relative; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; max-height: 90vh; overflow: auto; }
+.modal-body .close { align-self: center; background: #17171b; border: 1px solid #aaa; color: #fff; }
+/* 모든 창의 X 닫기 버튼: 어두운 배경에서도 잘 보이게 */
+.modal-x { position: absolute; top: 6px; right: 6px; z-index: 5; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; background: rgba(0, 0, 0, 0.8); color: #fff; font-size: 1.15rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-x:hover, .modal-x:focus-visible { background: #b3202a; }
+.modal-x.zoom-x { top: 8px; right: 8px; z-index: 3; }
 .empty-msg { background: #17171b; padding: 20px; border-radius: 10px; text-align: center; margin: 0; }
 
 /* 단서 형식별 모양 (2단계에서 더 다듬는다) */
