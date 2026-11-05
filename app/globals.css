@@ -120,3 +120,40 @@ input, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px so
 .clue-sms, .clue-chat { background: #11141a; color: #eee; }
 .bubbles { display: flex; flex-direction: column; gap: 6px; }
 .bubble { background: #2c8c4a; color: #fff; padding: 8px 12px; border-radius: 14px 14px 14px 2px; margin: 0; align-self: flex-start; }
+
+/* ── 손으로 푸는 자물쇠 ───────────────────────────── */
+.lockpanel { display: flex; flex-direction: column; align-items: center; gap: 12px; background: #17171b; border: 1px solid #333; border-radius: 12px; padding: 16px; }
+.lockpanel h3 { margin: 0; }
+.padlock { display: flex; flex-direction: column; align-items: center; }
+.shackle { width: 90px; height: 54px; border: 12px solid #b9bec7; border-bottom: 0; border-radius: 45px 45px 0 0; margin-bottom: -2px; transition: transform 0.5s, margin-top 0.5s; transform-origin: 100% 100%; }
+.padlock.open .shackle { margin-top: -22px; transform: rotate(-24deg); }
+.padlock-body { display: flex; gap: 8px; padding: 14px 16px; border-radius: 12px; background: linear-gradient(#caa24a, #8a6a24); border: 2px solid #5c4513; }
+.wheel-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.wheel-btn { width: 44px; height: 28px; border: 0; border-radius: 6px; background: #5c4513; color: #ffe9a8; cursor: pointer; }
+.wheel-btn:disabled { opacity: 0.5; }
+.wheel { width: 44px; height: 96px; border-radius: 8px; background: #111; color: #f4e7c0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 4px 0; touch-action: none; user-select: none; cursor: ns-resize; }
+.wheel-cur { font: bold 1.9rem "Courier New", monospace; }
+.wheel-side { font: 1rem "Courier New", monospace; opacity: 0.3; }
+.shake { animation: shake 0.4s; }
+
+.keypad, .dirlock { background: #22252b; border: 2px solid #3d424b; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.keypad-top { display: flex; align-items: center; gap: 12px; }
+.keypad-display { font: bold 1.6rem "Courier New", monospace; letter-spacing: 6px; background: #0b1a0f; color: #7dffa0; padding: 4px 12px; border-radius: 6px; min-width: 110px; text-align: center; }
+.led { width: 14px; height: 14px; border-radius: 50%; background: #333; }
+.led.red.on { background: #ff3030; box-shadow: 0 0 10px #ff3030; }
+.led.green.on { background: #35e06a; box-shadow: 0 0 10px #35e06a; }
+.keys { display: grid; grid-template-columns: repeat(3, 64px); gap: 8px; }
+.key { height: 52px; border-radius: 8px; border: 1px solid #555; background: #2f333b; color: #eee; font: bold 1.2rem inherit; cursor: pointer; }
+.key:active { background: #444a55; }
+.key.small { font-size: 0.85rem; }
+.dirpad { display: grid; grid-template-columns: repeat(3, 64px); grid-template-areas: ". up ." "left . right" ". down ."; gap: 8px; }
+.dirpad .up { grid-area: up; } .dirpad .down { grid-area: down; } .dirpad .left { grid-area: left; } .dirpad .right { grid-area: right; }
+
+/* 빛이 번쩍이지 않게: 형광등은 느리고 약하게만 흔들린다 */
+@keyframes flick { 0%, 100% { opacity: 1; } 50% { opacity: 0.78; } }
+.flicker { animation: flick 8s ease-in-out infinite; }
+.screen-glow { animation: flick 10s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .flicker, .screen-glow, .redglow, .blink-dot, .loading-lock { animation: none !important; }
+  .walls-track, .shackle, .door-panel { transition: none !important; }
+}
