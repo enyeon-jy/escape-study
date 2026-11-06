@@ -300,7 +300,7 @@ export default function StartScreen({ saved, onResume, onGameReady, onThemeChang
             <h2>놀람 연출을 켤까요?</h2>
             <label className="switch big-switch">
               <input type="checkbox" checked={surprise} onChange={(e) => setSurprise(e.target.checked)} />
-              <span>놀람 주의: 실패하면 교수님이 나타납니다</span>
+              <span>놀람 주의: 공포 테마에서 귀신 실루엣이 나타납니다</span>
             </label>
             <dl className="wiz-summary">
               <div>
