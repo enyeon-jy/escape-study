@@ -19,6 +19,7 @@ export interface CreateGameOptions {
   difficulty: Difficulty;
   mode: GameMode;
   surprise: boolean;
+  onStage?: (stage: "concepts" | "room") => void; // 로딩 화면에 지금 단계를 알려 준다
 }
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -48,10 +49,12 @@ export async function createGame(o: CreateGameOptions): Promise<GameData> {
   const material = limitMaterial(o.material, MATERIAL_MAX_CHARS); // AI에는 잘린 자료만 보낸다
 
   if (material.trim() === SAMPLE_MATERIAL.trim()) {
+    o.onStage?.("room");
     await wait(1000); // 로딩 연출
     return sampleCreateGame(o);
   }
 
+  o.onStage?.("concepts");
   const { concepts, review } = await post<{ concepts: Concept[]; review: ReviewItem[] }>({
     kind: "concepts",
     subject: o.subject,
@@ -78,6 +81,7 @@ export async function createGame(o: CreateGameOptions): Promise<GameData> {
     game.codeLang = codeLang;
     game.codeRoomIdx = codeRoomIndex(game.roomCount);
   }
+  o.onStage?.("room"); // 개념 추출이 끝났으니 첫 방을 만드는 단계
   game.rooms = [await createRoom(game, 0)]; // 첫 방만 먼저 만든다. 나머지는 플레이하는 동안 미리 만든다
   return game;
 }

@@ -50,6 +50,7 @@ export default function StartScreen({ saved, onResume, onGameReady, onThemeChang
   const [surprise, setSurprise] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [stage, setStage] = useState<"concepts" | "room">("concepts");
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
@@ -89,11 +90,21 @@ export default function StartScreen({ saved, onResume, onGameReady, onThemeChang
     onThemeChange?.(t); // 고른 테마의 배경과 분위기로 바로 바뀐다
   }
 
-  async function start() {
+  // useSample: AI를 부르지 않고 예시 자료로 체험 (테마·난이도 등 고른 설정은 그대로 쓴다)
+  async function start(useSample = false) {
     setLoading(true);
     setError(null);
+    setStage("concepts");
     try {
-      const game = await createGame({ subject, material, theme, difficulty, mode, surprise });
+      const game = await createGame({
+        subject: useSample ? SAMPLE_SUBJECT : subject,
+        material: useSample ? SAMPLE_MATERIAL : material,
+        theme,
+        difficulty,
+        mode,
+        surprise,
+        onStage: setStage,
+      });
       onGameReady(game);
     } catch (e) {
       setError(e instanceof Error ? e.message : "방을 만들지 못했어요. 잠시 후 다시 시도해 주세요.");
@@ -107,8 +118,35 @@ export default function StartScreen({ saved, onResume, onGameReady, onThemeChang
         <div className="loading-lock" aria-hidden="true">
           🔒
         </div>
-        <p className="loading-text">방을 만드는 중… 문이 잠기는 소리가 들린다</p>
+        <p className="loading-text">{stage === "concepts" ? "개념 추출 중…" : "방 만드는 중…"}</p>
+        <ol className="load-steps" aria-label="진행 단계">
+          <li className={stage === "concepts" ? "now" : "done"}>{stage === "concepts" ? "▶" : "✓"} 1. 개념 추출 중</li>
+          <li className={stage === "room" ? "now" : ""}>{stage === "room" ? "▶" : "·"} 2. 방 만드는 중</li>
+        </ol>
         <p className="tip">AI가 강의자료를 읽고 방을 짓고 있어요. 30초 정도 걸릴 수 있어요.</p>
+      </section>
+    );
+  }
+
+  // ── 방 생성 실패 화면: 입력한 자료·설정은 그대로 남아 있다 ─────────────────
+  if (error) {
+    return (
+      <section className="screen center" role="alert">
+        <h2 className="fail-title">방을 만들지 못했어요</h2>
+        <p className="error">{error}</p>
+        <p className="tip">입력한 자료와 설정은 그대로 남아 있어요.</p>
+        <div className="title-actions">
+          <button type="button" className="btn primary big" onClick={() => void start()}>
+            다시 시도
+          </button>
+          <button type="button" className="btn big" onClick={() => void start(true)}>
+            예시 자료로 체험하기
+          </button>
+          <button type="button" className="btn ghost" onClick={() => setError(null)}>
+            설정으로 돌아가기
+          </button>
+        </div>
+        <p className="tip">예시 자료 체험은 AI 없이 바로 시작돼요.</p>
       </section>
     );
   }
