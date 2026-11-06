@@ -15,7 +15,7 @@
 ## 증빙 캡처
 
 ### 1) JupyterLab 파일 트리와 생성 결과
-![JupyterLab 파일 트리와 생성된 문 이미지](images/tilon-files.png.png)
+![JupyterLab 파일 트리와 생성된 문 이미지](images/tilon-files.png)
 
 - 왼쪽 파일 트리의 `results / sdxl /` 폴더에 `door_horror_…`, `door_detective_…`, `door_isekai_…` 이름의 이미지가 여러 장 있고, 이미지마다 짝을 이루는 파일(아이콘상 JSON)이 함께 있다. `text2img_…` 이름의 파일도 보인다.
 - 오른쪽은 생성된 문 이미지(`door_horror_s1_…png`)를 연 화면이고, 위쪽 탭에는 작업에 쓴 `workshop.ipynb` 노트북이 열려 있다.
