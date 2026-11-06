@@ -173,7 +173,7 @@ input, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px so
 .wall-label { position: absolute; left: 10px; bottom: 8px; font-size: 0.8rem; background: rgba(0, 0, 0, 0.55); padding: 2px 8px; border-radius: 10px; z-index: 2; }
 .zoom-view { position: relative; }
 .back-btn { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); padding: 8px 16px; border: 0; border-radius: 20px; background: rgba(0, 0, 0, 0.7); color: #ffd9d0; font: inherit; cursor: pointer; z-index: 2; }
-.toast { position: absolute; left: 12px; right: 12px; top: 10px; background: rgba(0, 0, 0, 0.8); border: 1px solid #5a2a2a; padding: 8px 12px; border-radius: 8px; text-align: center; z-index: 3; }
+.toast { position: absolute; left: 56px; right: 56px; top: 10px; background: rgba(0, 0, 0, 0.8); border: 1px solid #5a2a2a; padding: 8px 12px; border-radius: 8px; text-align: center; z-index: 3; pointer-events: none; }
 .redglow { animation: flick 7s ease-in-out infinite; }
 .door-panel { transition: transform 1.2s ease-in-out; transform-box: fill-box; transform-origin: left center; }
 .door-spot.opened .door-panel { transform: scaleX(0.12); }

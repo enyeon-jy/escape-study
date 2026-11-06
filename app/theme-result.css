@@ -17,3 +17,6 @@
 @media (prefers-reduced-motion: reduce) {
   .escape-hero img, .escape-glow { animation: none; }
 }
+
+/* 결과 화면: 문 뒤 빛이 화면 폭을 넘어 가로 스크롤이 생기지 않게 가로 넘침만 자른다 (화면 안의 빛 모양은 그대로) */
+.app[data-screen="result"] .content { overflow-x: clip; }
