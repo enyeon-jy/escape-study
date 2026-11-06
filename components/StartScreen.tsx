@@ -321,7 +321,7 @@ export default function StartScreen({ saved, onResume, onGameReady, onThemeChang
               </div>
             </dl>
             <ul className="wiz-help">
-              <li>끄면 갑자기 튀어나오지 않고 조용히 등장해요. 공포 테마의 귀신 실루엣도 나오지 않아요.</li>
+              <li>끄면 공포 테마의 귀신 실루엣이 나오지 않아요.</li>
               <li>휴대폰·노트북 모두 사용할 수 있어요.</li>
             </ul>
             {error && <p className="error">{error}</p>}
