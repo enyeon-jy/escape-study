@@ -25,3 +25,13 @@
 .app[data-theme="detective"] .ending-box { border-left-color: #e0b060; }
 .app[data-theme="isekai"] .ending-box p, .app[data-theme="isekai"] .recap-line { font-family: "Song Myung", serif; }
 .app[data-theme="isekai"] .ending-box { border-left-color: #6af5d8; box-shadow: 0 0 22px #6af5d844; }
+
+/* 열린 문: 눌러서 나가라는 은은한 표시(깜빡임 없이 천천히 밝기만 변함). 안내 박스는 클릭을 막지 않는다. */
+.unlock-msg { pointer-events: none; }
+.door-tip { font-size: 0.85rem; font-weight: normal; color: #fff6d8; opacity: 0.9; }
+.door-hit { cursor: pointer; }
+.door-spot.opened { cursor: pointer; }
+.door-cue { stroke: var(--glow-core, rgba(255, 244, 214, 0.8)); animation: soft-pulse 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .door-cue { animation: none; }
+}

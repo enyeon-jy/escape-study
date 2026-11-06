@@ -66,7 +66,10 @@ export function DoorSpot({ label, opened, onPress, children }: { label: string; 
   return (
     <g className={`hotspot door-spot ${opened ? "opened" : ""}`} role="button" tabIndex={0} onClick={onPress} onKeyDown={onKey(onPress)} aria-label={label}>
       <title>{label}</title>
+      {/* 눈에 안 보이는 넓은 클릭 영역: 모바일에서 손가락으로 쉽게 누르도록 문보다 크게 잡는다 */}
+      <rect className="door-hit" x="274" y="26" width="122" height="192" fill="transparent" />
       {children}
+      {opened && <rect className="door-cue" x="286" y="46" width="98" height="166" rx="6" fill="none" strokeWidth="3" pointerEvents="none" />}
     </g>
   );
 }

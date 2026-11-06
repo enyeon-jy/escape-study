@@ -80,6 +80,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
   modalRef.current = modal;
   const [opened, setOpened] = useState(false);
   const openedRef = useRef(false);
+  const advanceRef = useRef<(() => void) | null>(null); // 열린 문을 눌렀을 때 바로 다음 방(또는 결과)으로 가는 동작
   const finished = useRef(false);
   const [intro, setIntro] = useState(initialProgress === null); // 새 게임이면 세계관 소개부터
   const introRef = useRef(intro);
@@ -242,14 +243,20 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
   }
 
   function solved() {
-    if (!room) return;
+    if (!room || openedRef.current) return;
     openedRef.current = true;
     setOpened(true);
     setModal(null);
     setZoom(null);
     setWall("front");
     sfx.door();
-    setTimeout(() => {
+    let moved = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const go = () => {
+      if (moved) return; // 타이머와 문 클릭이 겹쳐도 한 번만 넘어간다
+      moved = true;
+      clearTimeout(timer);
+      advanceRef.current = null;
       const cur = pRef.current;
       const spent = cfg.roomSec - cur.remaining;
       if (room.isFinal || cur.roomIdx + 1 >= gameRef.current.roomCount) {
@@ -270,7 +277,9 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
         openedRef.current = false;
         setOpened(false);
       }
-    }, 3800); // 탈출 직후 개념 정리 한 줄을 읽을 시간
+    };
+    advanceRef.current = go;
+    timer = setTimeout(go, 3800); // 가만히 있어도 탈출 직후 개념 정리 한 줄을 읽을 시간(3.8초) 뒤에 넘어간다. 문을 누르면 바로 넘어간다.
   }
 
   function wrong() {
@@ -405,7 +414,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
               doorOpened={opened}
               onSpot={pressSpot}
               onZoom={(v) => setZoom(v)}
-              onDoor={() => !opened && setModal({ type: "lock" })}
+              onDoor={() => (opened ? advanceRef.current?.() : setModal({ type: "lock" }))}
             />
             <button type="button" className="turn-btn left" onClick={() => turn(-1)} disabled={idx === 0} aria-label="왼쪽으로 돌아보기">
               ←
@@ -422,6 +431,7 @@ export default function EscapeScreen({ game, initialProgress, onProgress, onRoom
               {THEME_NAMES[game.theme].openMsg} {room.isFinal ? "탈출구가 열렸다!" : "다음 방으로…"}
             </strong>
             <span className="recap-line">{recapOf(room, game.theme)}</span>
+            <span className="door-tip">👆 열린 문을 누르면 바로 {room.isFinal ? "결과 화면으로" : "다음 방으로"} 가요</span>
           </div>
         )}
         {toast && <div className="toast">{toast}</div>}
