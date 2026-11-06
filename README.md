@@ -92,6 +92,16 @@
 | 코드 실행 | 자바스크립트: 제한된 Web Worker. 파이썬: 오픈소스 Pyodide(브라우저용 파이썬, jsDelivr CDN에서 내려받음) |
 | 점검용 페이지 | `/lock-demo`(자물쇠 4종), `/code-demo`(코드 실행기), `/theme-preview`(테마 그림) |
 
+**데이터 저장 (Supabase, 코드 기준)**
+
+| 테이블 | 언제 저장되나 | 주요 컬럼 |
+|---|---|---|
+| `games` (생성된 게임) | 게임이 만들어질 때 저장하고, 다음 방이 만들어질 때마다 같은 게임 번호로 덮어써서 방 JSON을 갱신한다 | `id`, `subject`(과목명), `theme`, `difficulty`, `mode`, `room_count`, `rooms`(방 JSON), `is_sample`, `code_lang`, `created_at`, `updated_at` |
+| `play_logs` (플레이 기록) | 방탈출이 끝날 때(성공·실패 모두) 한 줄을 저장한다. 결과를 낸 같은 화면에서 이어서 복습을 끝까지 마치면 그 줄의 `review_done`을 `true`로 갱신한다(새로고침 후에는 갱신되지 않는다). "다시 도전"으로 끝낼 때마다 새 줄이 생긴다 | `id`, `game_id`, `success`, `elapsed_sec`, `hints_used`, `revealed_count`, `rooms_cleared`, `total_rooms`, `review_done`, `created_at`, `updated_at` |
+
+- **예시 자료 플레이:** "예시 자료로 해 보기"로 만든 게임도 저장되며, `games.is_sample`이 `true`로 표시된다. `play_logs`에는 이 칸이 없고 `game_id`로 `games`와 이어서 구분한다.
+- **보내는 것과 보내지 않는 것:** 방 JSON에는 AI가 만든 단서·힌트·정답 설명 문장이 들어간다. 강의자료 원문, 이름·이메일은 보내지 않고, 서버가 허용한 칸만 골라 저장한다. 테이블은 RLS를 켜고 공개 접근 권한을 회수해 두었다(`supabase/schema.sql`).
+- **저장이 실패해도 게임은 계속된다:** 브라우저의 저장 요청은 응답을 기다리지 않고(보내고 잊기) 오류도 던지지 않는다. 서버는 환경변수가 없거나 Supabase 호출이 실패하면(제한 시간 8초) 로그만 남기고 실패 응답을 돌려줄 뿐이다. 저장용 환경변수가 없는 로컬 상태에서 예시 자료로 한 판을 끝까지 돌려 확인했다.
 **환경변수 이름** (값은 `.env.local`과 Vercel 환경변수에만 넣고, 저장소에는 올리지 않는다. 목록: `.env.example`)
 
 | 이름 | 용도 |
